@@ -33,7 +33,7 @@ TmuxRunner::~TmuxRunner() = default;
 
 void TmuxRunner::init() {
     config = KSharedConfig::openConfig("krunnerrc")->group("Runners").group("TmuxRunner");
-    config.writeEntry("program", "konsole");
+    config.writeEntry("program", "st");
     connect(this, SIGNAL(prepare()), this, SLOT(prepareForMatchSession()));
 }
 
@@ -57,6 +57,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     if (!term.startsWith("tmux")) return;
     term.replace(QRegExp("tmux *"), "");
     QList<Plasma::QueryMatch> matches;
+    bool exactMatch = false;
 
     QString tmpTerm;
     if (term.contains(' ')) {
@@ -66,23 +67,25 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     }
     for (const auto &session:tmuxSessions) {
         if (session.startsWith(tmpTerm)) {
+            if (session == tmpTerm) exactMatch = true;
             matches.append(addMatch("Attatch to " + session, "attatch|" + session,
                                     (float) tmpTerm.length() / (float) session.length()));
         }
     }
 
-    if (matches.empty()) {
-        // Name, speces, path
+    if (!exactMatch && (matches.isEmpty() || config.readEntry("add_new_by_part_match","false")=="true")) {
+        // Name, spaces, path
         QRegExp regex(R"(^([\w-]+)(?: +(.+)?)?$)");
         regex.indexIn(term);
         const auto texts = regex.capturedTexts();
+        int relevance = matches.empty() ? 1 : 0;
         //New session
         if (texts.size() == 2 || texts.at(2).isEmpty()) {
-            matches.append(addMatch("New session " + texts.at(1), "new|" + texts.at(1), 1));
+            matches.append(addMatch("New session " + texts.at(1), "new|" + texts.at(1), relevance));
             //New session with path
         } else if (texts.size() == 3) {
             matches.append(addMatch("New session " + texts.at(1) + " in " + texts.at(2),
-                                    "new|" + texts.at(1) + "|" + texts.at(2), 1));
+                                    "new|" + texts.at(1) + "|" + texts.at(2), relevance));
         }
     }
 
@@ -114,14 +117,29 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
         QProcess::startDetached(program, args);
     } else {
         QStringList args = {"-e", "tmux", "new-session", "-s", entries.at(1)};
+        if (option == "yakuake") {
+            program = "yakuake-session";
+            args.clear();
+            args.append({"-t", entries.at(1), "-e", "tmux", "new-session", "-s", entries.at(1)});
+        } else if (option == "terminator") {
+            program = "terminator";
+            args.clear();
+            args.append({"-x", "tmux", "new-session", "-s", entries.at(1)});
+        } else if (option == "st") {
+            program = "st";
+            args.clear();
+            args.append({"tmux", "new-session", "-s", entries.at(1)});
+        }
+        // Add path option
         if (entries.size() == 3) {
             QString path = entries.last();
             if (!(path.startsWith('/') || path.startsWith('~'))) {
-                path.insert(0, "~/");
+                path.insert(0, QDir::homePath() + "/");
             }
             args.append({"-c", path});
+        } else {
+            args.append({"-c", QDir::homePath()});
         }
-        qInfo() << program << args;
         QProcess::startDetached(program, args);
     }
 }

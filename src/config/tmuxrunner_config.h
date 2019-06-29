@@ -36,14 +36,15 @@ Q_OBJECT
 public:
     explicit TmuxRunnerConfig(QWidget *parent = nullptr, const QVariantList &args = QVariantList());
 
+    KConfigGroup config;
+
 public Q_SLOTS:
 
     void save() override;
 
-    void load() override;
-
     void defaults() override;
 
+    void customOptionInsertion();
 
 private:
     TmuxRunnerConfigForm *m_ui;

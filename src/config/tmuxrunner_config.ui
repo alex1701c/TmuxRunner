@@ -36,12 +36,188 @@
       <string>TmuxRunner Config</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_4">
-      <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-       <widget class="QLabel" name="label">
+      <item>
+       <widget class="QCheckBox" name="partlyMatchesOption">
         <property name="text">
-         <string>Hello World !</string>
+         <string>Show create options for partly matches</string>
         </property>
        </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Select Default Terminal</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <layout class="QVBoxLayout" name="options">
+           <item>
+            <widget class="QRadioButton" name="optionKonsole">
+             <property name="text">
+              <string>Konsole</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="optionYakuake">
+             <property name="text">
+              <string>Yakuake</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="optionTerminator">
+             <property name="text">
+              <string>Terminator</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="optionSucklessTerminal">
+             <property name="text">
+              <string>Suckless Terminal (st)</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="optionCustom">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Custom</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="syntaxExplainLabel">
+           <property name="text">
+            <string>Syntax: %name (Name of session) %path (initial path, default is user home)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="attatchSessionLabel">
+             <property name="text">
+              <string>Attatch Session</string>
+             </property>
+            </widget>
+           </item>
+           <item alignment="Qt::AlignLeft">
+            <widget class="QLineEdit" name="attatchSessionProgram">
+             <property name="placeholderText">
+              <string>Program</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="attatchSessionParameters">
+             <property name="placeholderText">
+              <string>Parameters</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="createSessionLabel">
+             <property name="text">
+              <string>Create Session </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="createSessionParameters">
+             <property name="placeholderText">
+              <string>Parameters</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QListWidget" name="shortcutList"/>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>TextLabel</string>
+          </property>
+         </widget>
+        </item>
+        <item alignment="Qt::AlignLeft">
+         <widget class="QLineEdit" name="shortcutKey">
+          <property name="placeholderText">
+           <string>$key</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="shortcutPath">
+          <property name="placeholderText">
+           <string>/my/path/</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QPushButton" name="shortcutAddButton">
+          <property name="text">
+           <string>Add Shortcut</string>
+          </property>
+         </widget>
+        </item>
+        <item alignment="Qt::AlignLeft">
+         <widget class="QPushButton" name="shortcutDeleteButton">
+          <property name="text">
+           <string>Delete Shortcut</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>10</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </widget>
