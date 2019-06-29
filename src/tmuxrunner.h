@@ -19,6 +19,7 @@
 #define TMUXRUNNER_H
 
 #include <KRunner/AbstractRunner>
+#include <KSharedConfig>
 
 class TmuxRunner : public Plasma::AbstractRunner
 {
@@ -30,7 +31,9 @@ public:
 
     QList<QString> tmuxSessions;
 
-    Plasma::QueryMatch addMatch(const QString &text, const QString &data, const float relevance);
+    Plasma::QueryMatch addMatch(const QString &text, const QString &data, float relevance);
+
+    KConfigGroup config;
 
 protected Q_SLOTS:
 

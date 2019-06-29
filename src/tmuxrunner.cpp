@@ -20,6 +20,7 @@
 // KF
 #include <KLocalizedString>
 #include <QtGui/QtGui>
+#include <KSharedConfig>
 
 
 TmuxRunner::TmuxRunner(QObject *parent, const QVariantList &args)
@@ -31,6 +32,8 @@ TmuxRunner::~TmuxRunner() = default;
 
 
 void TmuxRunner::init() {
+    config = KSharedConfig::openConfig("krunnerrc")->group("Runners").group("TmuxRunner");
+    config.writeEntry("program", "konsole");
     connect(this, SIGNAL(prepare()), this, SLOT(prepareForMatchSession()));
 }
 
@@ -52,13 +55,19 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     if (!context.isValid()) return;
     QString term = context.query();
     if (!term.startsWith("tmux")) return;
-    term.replace(QRegExp("tmux ?"), "");
+    term.replace(QRegExp("tmux *"), "");
     QList<Plasma::QueryMatch> matches;
 
+    QString tmpTerm;
+    if (term.contains(' ')) {
+        tmpTerm = term.split(' ').first();
+    } else {
+        tmpTerm = term;
+    }
     for (const auto &session:tmuxSessions) {
-        if (session.startsWith(term)) {
+        if (session.startsWith(tmpTerm)) {
             matches.append(addMatch("Attatch to " + session, "attatch|" + session,
-                                    (float) term.length() / (float) session.length()));
+                                    (float) tmpTerm.length() / (float) session.length()));
         }
     }
 
@@ -83,14 +92,41 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
 void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
     Q_UNUSED(context)
     QList<QString> entries = match.data().toString().split('|');
+    QString option = config.readEntry("program", "konsole");
+    QString program = "konsole";
+
     if (entries.first() == "attatch") {
-        qInfo() << entries.last();
-        QProcess::startDetached("konsole",
-                                QStringList() << "-e" << "tmux" << "attach-session" << "-t" << entries.last());
+        QStringList args = {"-e", "tmux", "a", "-t", entries.last()};
+
+        if (option == "yakuake") {
+            program = "yakuake-session";
+            args.clear();
+            args.append({"-t", entries.last(), "-e", "tmux", "attach-session", "-t", entries.last()});
+        } else if (option == "terminator") {
+            program = "terminator";
+            args.clear();
+            args.append({"-x", "tmux", "a", "-t", entries.last()});
+        } else if (option == "st") {
+            program = "st";
+            args.clear();
+            args.append({"tmux", "attach-session", "-t", entries.last()});
+        }
+        QProcess::startDetached(program, args);
+    } else {
+        QStringList args = {"-e", "tmux", "new-session", "-s", entries.at(1)};
+        if (entries.size() == 3) {
+            QString path = entries.last();
+            if (!(path.startsWith('/') || path.startsWith('~'))) {
+                path.insert(0, "~/");
+            }
+            args.append({"-c", path});
+        }
+        qInfo() << program << args;
+        QProcess::startDetached(program, args);
     }
 }
 
-Plasma::QueryMatch TmuxRunner::addMatch(const QString &text, const QString &data, const float relevance) {
+Plasma::QueryMatch TmuxRunner::addMatch(const QString &text, const QString &data, float relevance) {
     Plasma::QueryMatch match(this);
     match.setIconName("utilities-terminal");
     match.setText(text);
