@@ -22,6 +22,7 @@
 #include <krunner/abstractrunner.h>
 #include <QtWidgets/QGridLayout>
 #include <QDebug>
+#include <QtCore/QStringListModel>
 
 K_PLUGIN_FACTORY(TmuxRunnerConfigFactory, registerPlugin<TmuxRunnerConfig>("kcm_krunner_tmuxrunner");)
 
@@ -29,10 +30,6 @@ TmuxRunnerConfigForm::TmuxRunnerConfigForm(QWidget *parent) : QWidget(parent) {
     setupUi(this);
 }
 // TODO Handle defaults
-// CHECK Hamdle Save
-// TODO Handle enable/disable of shortcut add/delete
-// TODO Handle click to add new shortcut
-// TODO Handle click to delete new shortcut
 
 TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : KCModule(parent, args) {
     m_ui = new TmuxRunnerConfigForm(this);
@@ -66,22 +63,33 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     m_ui->optionCustom->setEnabled(!m_ui->createSessionParameters->text().isEmpty() &&
                                    !m_ui->attatchSessionProgram->text().isEmpty() &&
                                    !m_ui->attatchSessionParameters->text().isEmpty());
-    connect(m_ui->attatchSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(changed()));
-    connect(m_ui->attatchSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(changed()));
-    connect(m_ui->createSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(changed()));
-    connect(m_ui->attatchSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
-    connect(m_ui->attatchSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
-    connect(m_ui->createSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
+
+    m_ui->shortcutAddButton->setEnabled(false);
+    m_ui->shortcutDeleteButton->setEnabled(false);
 
     connect(m_ui->partlyMatchesOption, SIGNAL(clicked(bool)), this, SLOT(changed()));
+    // Terminals
     connect(m_ui->optionKonsole, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->optionYakuake, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->optionTerminator, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->optionSucklessTerminal, SIGNAL(clicked(bool)), this, SLOT(changed()));
-
+    connect(m_ui->optionCustom, SIGNAL(clicked(bool)), this, SLOT(changed()));
+    connect(m_ui->attatchSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
+    connect(m_ui->attatchSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
+    connect(m_ui->createSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
+    // Custom Terminal
+    connect(m_ui->attatchSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(changed()));
+    connect(m_ui->attatchSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(changed()));
+    connect(m_ui->createSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(changed()));
+    // Shortcuts
     connect(m_ui->shortcutAddButton, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->shortcutDeleteButton, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->optionSucklessTerminal, SIGNAL(clicked(bool)), this, SLOT(changed()));
+    connect(m_ui->shortcutAddButton, SIGNAL(clicked(bool)), this, SLOT(addShortcut()));
+    connect(m_ui->shortcutDeleteButton, SIGNAL(clicked(bool)), this, SLOT(deleteShortcut()));
+    connect(m_ui->shortcutKey, SIGNAL(textChanged(QString)), this, SLOT(shortcutInsertion()));
+    connect(m_ui->shortcutPath, SIGNAL(textChanged(QString)), this, SLOT(shortcutInsertion()));
+    connect(m_ui->shortcutList, SIGNAL(currentTextChanged(QString)), this, SLOT(shortcutInsertion()));
+
 
     load();
 }
@@ -89,10 +97,13 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
 
 void TmuxRunnerConfig::defaults() {
 
+    m_ui->partlyMatchesOption->setChecked(false);
+    m_ui->optionKonsole->setChecked(true);
+
     emit changed(true);
 }
-void TmuxRunnerConfig::save() {
 
+void TmuxRunnerConfig::save() {
     KCModule::save();
 
     if (m_ui->optionKonsole->isChecked()) config.writeEntry("program", "konsole");
@@ -108,8 +119,11 @@ void TmuxRunnerConfig::save() {
     customTerminalConfig.writeEntry("attatch_params", m_ui->attatchSessionParameters->text());
     customTerminalConfig.writeEntry("new_params", m_ui->createSessionParameters->text());
 
+    for (const auto &key:shortcutConfig.keyList()) {
+        shortcutConfig.deleteEntry(key);
+    }
     for (int i = 0; i < m_ui->shortcutList->count(); i++) {
-        const auto split = m_ui->shortcutList->takeItem(i)->text().split(" ==> ");
+        const auto split = m_ui->shortcutList->item(i)->text().split(" ==> ");
         shortcutConfig.writeEntry(split.first(), split.last());
     }
     emit changed();
@@ -122,7 +136,21 @@ void TmuxRunnerConfig::customOptionInsertion() {
 }
 
 void TmuxRunnerConfig::shortcutInsertion() {
+    m_ui->shortcutAddButton->setEnabled(!m_ui->shortcutKey->text().isEmpty()
+                                        && m_ui->shortcutKey->text().startsWith("$") &&
+                                        !m_ui->shortcutPath->text().isEmpty());
+    m_ui->shortcutDeleteButton->setEnabled(m_ui->shortcutList->currentIndex().row() != -1);
+}
 
+void TmuxRunnerConfig::addShortcut() {
+    m_ui->shortcutList->setHidden(false);
+    m_ui->shortcutList->addItem(m_ui->shortcutKey->text() + " ==> " + m_ui->shortcutPath->text());
+    m_ui->shortcutKey->clear();
+    m_ui->shortcutPath->clear();
+}
+
+void TmuxRunnerConfig::deleteShortcut() {
+    m_ui->shortcutList->model()->removeRow(m_ui->shortcutList->currentRow());
 }
 
 

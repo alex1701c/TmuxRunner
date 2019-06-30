@@ -145,17 +145,27 @@
        </widget>
       </item>
       <item>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetFixedSize</enum>
+        </property>
+        <property name="topMargin">
+         <number>10</number>
+        </property>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Add Shortcuts from paths:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QListWidget" name="shortcutList"/>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>TextLabel</string>
-          </property>
-         </widget>
-        </item>
         <item alignment="Qt::AlignLeft">
          <widget class="QLineEdit" name="shortcutKey">
           <property name="placeholderText">

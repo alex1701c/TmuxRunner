@@ -46,6 +46,10 @@ public Q_SLOTS:
 
     void defaults() override;
 
+    void addShortcut();
+
+    void deleteShortcut();
+
     void customOptionInsertion();
 
     void shortcutInsertion();
