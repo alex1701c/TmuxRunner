@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=TmuxRunner
 Comment=TmuxRunner runner
-Icon=planetkde
+Icon=utilities-terminal
 
 X-KDE-ServiceTypes=Plasma/Runner
 Type=Service

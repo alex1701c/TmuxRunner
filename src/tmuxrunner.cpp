@@ -112,7 +112,15 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
             program = "st";
             args.clear();
             args.append({"tmux", "attach-session", "-t", entries.last()});
+        } else if (option == "custom") {
+            const auto customConfig = config.group("Custom");
+            program = customConfig.readEntry("program");
+            args.clear();
+            QString arg = customConfig.readEntry("attatch_params");
+            arg.replace("%name", entries.last());
+            args.append(arg.split(' '));
         }
+        qInfo() << program << args;
         QProcess::startDetached(program, args);
     } else {
         QStringList args = {"-e", "tmux", "new-session", "-s", entries.at(1)};
@@ -128,30 +136,45 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
             program = "st";
             args.clear();
             args.append({"tmux", "new-session", "-s", entries.at(1)});
+        } else if (option == "custom") {
+            const auto customConfig = config.group("Custom");
+            program = customConfig.readEntry("program");
+            args.clear();
+            QString arg = customConfig.readEntry("new_params");
+            arg.replace("%name", entries.at(1));
+            if (entries.size() == 3) {
+                arg.replace("%path", filterPath(entries.last()));
+            } else {
+                arg.replace("%path", QDir::homePath());
+            }
+            args.append(arg.split(' '));
         }
         // Add path option
         if (entries.size() == 3) {
-            QString path = entries.last();
-            // Use shortcuts
-            const auto shortcutConfig = config.group("Shortcuts");
-            for (const auto &key:shortcutConfig.keyList()) {
-                path.replace(key, shortcutConfig.readEntry(key));
-            }
-            if (path.startsWith('~')) {
-                path.replace('~', QDir::homePath());
-            } else if (!path.startsWith('/')) {
-                path.insert(0, QDir::homePath() + "/");
-            }
-
-            qInfo() << path;
-
-            args.append({"-c", path});
-        } else {
+            args.append({"-c", filterPath(entries.last())});
+        } else if (option != "custom") {
             args.append({"-c", QDir::homePath()});
         }
+        qInfo() << program << args;
+
         QProcess::startDetached(program, args);
     }
 }
+
+QString TmuxRunner::filterPath(QString path) {
+    if (path.isEmpty()) return QDir::homePath();
+    const auto shortcutConfig = config.group("Shortcuts");
+    for (const auto &key:shortcutConfig.keyList()) {
+        path.replace(key, shortcutConfig.readEntry(key));
+    }
+    if (path.startsWith('~')) {
+        path.replace('~', QDir::homePath());
+    } else if (!path.startsWith('/')) {
+        path.insert(0, QDir::homePath() + "/");
+    }
+    return path;
+}
+
 
 Plasma::QueryMatch TmuxRunner::addMatch(const QString &text, const QString &data, float relevance) {
     Plasma::QueryMatch match(this);

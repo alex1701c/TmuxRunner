@@ -23,13 +23,13 @@
 #include <QtWidgets/QGridLayout>
 #include <QDebug>
 #include <QtCore/QStringListModel>
+#include <QtCore/QDir>
 
 K_PLUGIN_FACTORY(TmuxRunnerConfigFactory, registerPlugin<TmuxRunnerConfig>("kcm_krunner_tmuxrunner");)
 
 TmuxRunnerConfigForm::TmuxRunnerConfigForm(QWidget *parent) : QWidget(parent) {
     setupUi(this);
 }
-// TODO Handle defaults
 
 TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : KCModule(parent, args) {
     m_ui = new TmuxRunnerConfigForm(this);

@@ -35,6 +35,9 @@ public:
 
     KConfigGroup config;
 
+    QString filterPath(QString path);
+
+
 protected Q_SLOTS:
 
     void init() override;
