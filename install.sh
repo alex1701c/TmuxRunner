@@ -11,6 +11,7 @@ cmake -DQT_PLUGIN_INSTALL_DIR=`kf5-config --qt-plugins` ..
 make -j2
 sudo make install
 sudo curl https://raw.githubusercontent.com/aplatanado/yakuake-session/master/yakuake-session -o /usr/bin/yakuake-session
+sudo chmod +x /usr/bin/yakuake-session
 
 kquitapp5 krunner 2> /dev/null
 kstart5 --windowclass krunner krunner > /dev/null 2>&1 &

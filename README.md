@@ -3,7 +3,7 @@
 Required Dependencies
 ----------------------
 Debian/Ubuntu:  
-`sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext`
+`sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext wmctrl`
 
 openSUSE  
 `sudo zypper install cmake extra-cmake-modules libQt5Widgets5 libQt5Core5 libqt5-qtlocation-devel ki18n-devel ktextwidgets-devel kservice-devel krunner-devel gettext-tools`  
@@ -27,6 +27,7 @@ cmake -DQT_PLUGIN_INSTALL_DIR=`kf5-config --qt-plugins` ..
 make
 sudo make install
 sudo curl https://raw.githubusercontent.com/aplatanado/yakuake-session/master/yakuake-session -o /usr/bin/yakuake-session
+sudo chmod +x /usr/bin/yakuake-session
 ```
 
 Restart krunner to load the runner (in a terminal type: kquitapp5 krunner;kstart5 krunner )
