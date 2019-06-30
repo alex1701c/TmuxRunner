@@ -120,9 +120,11 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
 
 void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
     Q_UNUSED(context)
+
     QMap<QString, QVariant> data = match.data().toMap();
     QString program = data.value("program", config.readEntry("program", "konsole")).toString();
     const QString target = data.value("target").toString();
+
     if (data.value("action") == "attach") {
         QStringList args = {"-e", "tmux", "a", "-t", target};
         if (program == "yakuake") {
