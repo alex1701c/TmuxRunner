@@ -48,6 +48,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
         }
     }
     m_ui->attatchSessionProgram->setText(customTerminalConfig.readEntry("program", ""));
+    m_ui->flags->setChecked(config.readEntry("enable_flags", "true") == "true");
     m_ui->attatchSessionParameters->setText(customTerminalConfig.readEntry("attatch_params", ""));
     m_ui->createSessionParameters->setText(customTerminalConfig.readEntry("new_params", ""));
 
@@ -68,6 +69,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     m_ui->shortcutDeleteButton->setEnabled(false);
 
     connect(m_ui->partlyMatchesOption, SIGNAL(clicked(bool)), this, SLOT(changed()));
+    connect(m_ui->flags, SIGNAL(clicked(bool)), this, SLOT(changed()));
     // Terminals
     connect(m_ui->optionKonsole, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->optionYakuake, SIGNAL(clicked(bool)), this, SLOT(changed()));
@@ -97,6 +99,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
 
 void TmuxRunnerConfig::defaults() {
 
+    m_ui->flags->setChecked(true);
     m_ui->partlyMatchesOption->setChecked(false);
     m_ui->optionKonsole->setChecked(true);
 
@@ -114,6 +117,7 @@ void TmuxRunnerConfig::save() {
     else config.writeEntry("program", "konsole");
 
     config.writeEntry("add_new_by_part_match", m_ui->partlyMatchesOption->isChecked() ? "true" : "false");
+    config.writeEntry("enable_flags", m_ui->flags->isChecked() ? "true" : "false");
 
     customTerminalConfig.writeEntry("program", m_ui->attatchSessionProgram->text());
     customTerminalConfig.writeEntry("attatch_params", m_ui->attatchSessionParameters->text());

@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>669</width>
-    <height>580</height>
+    <height>593</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -40,6 +40,13 @@
        <widget class="QCheckBox" name="partlyMatchesOption">
         <property name="text">
          <string>Show create options for partly matches</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="flags">
+        <property name="text">
+         <string>Use flags to use different terminal</string>
         </property>
        </widget>
       </item>
@@ -157,7 +164,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Add Shortcuts from paths:</string>
+         <string>Shortcuts:</string>
         </property>
        </widget>
       </item>

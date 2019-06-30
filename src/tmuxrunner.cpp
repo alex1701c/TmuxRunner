@@ -64,11 +64,27 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     } else {
         tmpTerm = term;
     }
+
+    QMap<QString, QVariant> data;
+    if (config.readEntry("enable_flags", "true") == "true") {
+        if (term.contains(QRegExp(" -([a-z])$"))) {
+            QRegExp exp(" -([a-z])$");
+            exp.indexIn(term);
+            QString match = exp.capturedTexts().last();
+            if (match == "k") { data.insert("program", "konsole"); }
+            else if (match == "y") { data.insert("program", "yakuake"); }
+            else if (match == "t") { data.insert("program", "terminator"); }
+            else if (match == "s") { data.insert("program", "st"); }
+            else if (match == "c") { data.insert("program", "custom"); }
+        }
+    }
+
     for (const auto &session:tmuxSessions) {
         if (session.startsWith(tmpTerm)) {
             if (session == tmpTerm) exactMatch = true;
-            matches.append(addMatch("Attatch to " + session, "attatch|" + session,
-                                    (float) tmpTerm.length() / (float) session.length()));
+            data.insert("action", "attach");
+            data.insert("target", session);
+            matches.append(addMatch("Attatch to " + session, data, (float) tmpTerm.length() / session.length()));
         }
     }
 
@@ -78,13 +94,15 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
         regex.indexIn(term);
         QStringList texts = regex.capturedTexts();
         int relevance = matches.empty() ? 1 : 0;
+        data.insert("action", "new");
+        data.insert("target", texts.at(1));
         //New session
         if (texts.size() == 2 || texts.at(2).isEmpty()) {
-            matches.append(addMatch("New session " + texts.at(1), "new|" + texts.at(1), relevance));
+            matches.append(addMatch("New session " + texts.at(1), data, relevance));
             //New session with path
         } else if (texts.size() == 3) {
-            matches.append(addMatch("New session " + texts.at(1) + " in " + texts.at(2),
-                                    "new|" + texts.at(1) + "|" + texts.at(2), relevance));
+            data.insert("path", texts.at(2));
+            matches.append(addMatch("New session " + texts.at(1) + " in " + texts.at(2), data, relevance));
         }
     }
 
@@ -93,67 +111,58 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
 
 void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
     Q_UNUSED(context)
-    QList<QString> entries = match.data().toString().split('|');
-    QString option = config.readEntry("program", "konsole");
-    QString program = "konsole";
+    QMap<QString, QVariant> data = match.data().toMap();
+    QString program = data.value("program", config.readEntry("program", "konsole")).toString();
+    const QString target = data.value("target").toString();
 
-    if (entries.first() == "attatch") {
-        QStringList args = {"-e", "tmux", "a", "-t", entries.last()};
+    if (data.value("action") == "attach") {
+        QStringList args = {"-e", "tmux", "a", "-t", target};
 
-        if (option == "yakuake") {
+        if (program == "yakuake") {
             program = "yakuake-session";
             args.clear();
-            args.append({"-t", entries.last(), "-e", "tmux", "attach-session", "-t", entries.last()});
-        } else if (option == "terminator") {
-            program = "terminator";
+            args.append({"-t", target, "-e", "tmux", "attach-session", "-t", target});
+        } else if (program == "terminator") {
             args.clear();
-            args.append({"-x", "tmux", "a", "-t", entries.last()});
-        } else if (option == "st") {
-            program = "st";
+            args.append({"-x", "tmux", "a", "-t", target});
+        } else if (program == "st") {
             args.clear();
-            args.append({"tmux", "attach-session", "-t", entries.last()});
-        } else if (option == "custom") {
+            args.append({"tmux", "attach-session", "-t", target});
+        } else if (program == "custom") {
             const auto customConfig = config.group("Custom");
             program = customConfig.readEntry("program");
             args.clear();
             QString arg = customConfig.readEntry("attatch_params");
-            arg.replace("%name", entries.last());
+            arg.replace("%name", target);
             args.append(arg.split(' '));
         }
         qInfo() << program << args;
         QProcess::startDetached(program, args);
     } else {
-        QStringList args = {"-e", "tmux", "new-session", "-s", entries.at(1)};
-        if (option == "yakuake") {
+        QStringList args = {"-e", "tmux", "new-session", "-s", target};
+        if (program == "yakuake") {
             program = "yakuake-session";
             args.clear();
-            args.append({"-t", entries.at(1), "-e", "tmux", "new-session", "-s", entries.at(1)});
-        } else if (option == "terminator") {
-            program = "terminator";
+            args.append({"-t", target, "-e", "tmux", "new-session", "-s", target});
+        } else if (program == "terminator") {
             args.clear();
-            args.append({"-x", "tmux", "new-session", "-s", entries.at(1)});
-        } else if (option == "st") {
-            program = "st";
+            args.append({"-x", "tmux", "new-session", "-s", target});
+        } else if (program == "st") {
             args.clear();
-            args.append({"tmux", "new-session", "-s", entries.at(1)});
-        } else if (option == "custom") {
+            args.append({"tmux", "new-session", "-s", target});
+        } else if (program == "custom") {
             const auto customConfig = config.group("Custom");
             program = customConfig.readEntry("program");
             args.clear();
             QString arg = customConfig.readEntry("new_params");
-            arg.replace("%name", entries.at(1));
-            if (entries.size() == 3) {
-                arg.replace("%path", filterPath(entries.last()));
-            } else {
-                arg.replace("%path", QDir::homePath());
-            }
+            arg.replace("%name", target);
+            arg.replace("%path", filterPath(data.value("path", "").toString()));
+
             args.append(arg.split(' '));
         }
         // Add path option
-        if (entries.size() == 3) {
-            args.append({"-c", filterPath(entries.last())});
-        } else if (option != "custom") {
-            args.append({"-c", QDir::homePath()});
+        if (program != "custom" && !data.value("path").toString().isEmpty()) {
+            args.append({"-c", filterPath(data.value("path").toString())});
         }
         qInfo() << program << args;
 
@@ -176,7 +185,7 @@ QString TmuxRunner::filterPath(QString path) {
 }
 
 
-Plasma::QueryMatch TmuxRunner::addMatch(const QString &text, const QString &data, float relevance) {
+Plasma::QueryMatch TmuxRunner::addMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance) {
     Plasma::QueryMatch match(this);
     match.setIconName("utilities-terminal");
     match.setText(text);

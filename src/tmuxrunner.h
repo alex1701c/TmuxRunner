@@ -31,7 +31,7 @@ public:
 
     QList<QString> tmuxSessions;
 
-    Plasma::QueryMatch addMatch(const QString &text, const QString &data, float relevance);
+    Plasma::QueryMatch addMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance);
 
     KConfigGroup config;
 
