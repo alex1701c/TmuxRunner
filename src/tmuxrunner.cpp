@@ -33,7 +33,6 @@ TmuxRunner::~TmuxRunner() = default;
 
 void TmuxRunner::init() {
     config = KSharedConfig::openConfig("krunnerrc")->group("Runners").group("TmuxRunner");
-    config.writeEntry("program", "st");
     connect(this, SIGNAL(prepare()), this, SLOT(prepareForMatchSession()));
 }
 

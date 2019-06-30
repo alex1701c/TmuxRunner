@@ -37,6 +37,8 @@ public:
     explicit TmuxRunnerConfig(QWidget *parent = nullptr, const QVariantList &args = QVariantList());
 
     KConfigGroup config;
+    KConfigGroup shortcutConfig;
+    KConfigGroup customTerminalConfig;
 
 public Q_SLOTS:
 
@@ -45,6 +47,8 @@ public Q_SLOTS:
     void defaults() override;
 
     void customOptionInsertion();
+
+    void shortcutInsertion();
 
 private:
     TmuxRunnerConfigForm *m_ui;
