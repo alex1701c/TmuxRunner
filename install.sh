@@ -1,11 +1,8 @@
 #!/bin/bash
 
-# TODO Enable if the project is on Github
 if [[ $(basename "$PWD") != "TmuxRunner"* ]];then
-    #git clone https://github.com/%{USERNAME}/TmuxRunner
-    #cd TmuxRunner/
-    echo "Please go to the project folder"
-    exit
+    git clone https://github.com/alex1701c/TmuxRunner
+    cd TmuxRunner/
 fi
 
 mkdir -p build
