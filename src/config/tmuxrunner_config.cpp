@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright %{CURRENT_YEAR} by %{AUTHOR} <%{EMAIL}>                        *
+ *   Copyright 2019 by Alex <alexkp12355@gmail.com>                           *
  *                                                                            *
  *  This library is free software; you can redistribute it and/or modify      *
  *  it under the terms of the GNU Lesser General Public License as published  *
@@ -47,9 +47,9 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
             m_ui->shortcutList->addItem(key + " ==> " + shortcutConfig.readEntry(key));
         }
     }
-    m_ui->attatchSessionProgram->setText(customTerminalConfig.readEntry("program", ""));
+    m_ui->attachSessionProgram->setText(customTerminalConfig.readEntry("program", ""));
     m_ui->flags->setChecked(config.readEntry("enable_flags", "true") == "true");
-    m_ui->attatchSessionParameters->setText(customTerminalConfig.readEntry("attatch_params", ""));
+    m_ui->attachSessionParameters->setText(customTerminalConfig.readEntry("attach_params", ""));
     m_ui->createSessionParameters->setText(customTerminalConfig.readEntry("new_params", ""));
 
 
@@ -62,8 +62,8 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
 
     m_ui->partlyMatchesOption->setChecked(config.readEntry("add_new_by_part_match", "false") == "true");
     m_ui->optionCustom->setEnabled(!m_ui->createSessionParameters->text().isEmpty() &&
-                                   !m_ui->attatchSessionProgram->text().isEmpty() &&
-                                   !m_ui->attatchSessionParameters->text().isEmpty());
+                                   !m_ui->attachSessionProgram->text().isEmpty() &&
+                                   !m_ui->attachSessionParameters->text().isEmpty());
 
     m_ui->shortcutAddButton->setEnabled(false);
     m_ui->shortcutDeleteButton->setEnabled(false);
@@ -76,12 +76,12 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     connect(m_ui->optionTerminator, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->optionSucklessTerminal, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->optionCustom, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->attatchSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
-    connect(m_ui->attatchSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
+    connect(m_ui->attachSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
+    connect(m_ui->attachSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
     connect(m_ui->createSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
     // Custom Terminal
-    connect(m_ui->attatchSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(changed()));
-    connect(m_ui->attatchSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(changed()));
+    connect(m_ui->attachSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(changed()));
+    connect(m_ui->attachSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(changed()));
     connect(m_ui->createSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(changed()));
     // Shortcuts
     connect(m_ui->shortcutAddButton, SIGNAL(clicked(bool)), this, SLOT(changed()));
@@ -119,8 +119,8 @@ void TmuxRunnerConfig::save() {
     config.writeEntry("add_new_by_part_match", m_ui->partlyMatchesOption->isChecked() ? "true" : "false");
     config.writeEntry("enable_flags", m_ui->flags->isChecked() ? "true" : "false");
 
-    customTerminalConfig.writeEntry("program", m_ui->attatchSessionProgram->text());
-    customTerminalConfig.writeEntry("attatch_params", m_ui->attatchSessionParameters->text());
+    customTerminalConfig.writeEntry("program", m_ui->attachSessionProgram->text());
+    customTerminalConfig.writeEntry("attach_params", m_ui->attachSessionParameters->text());
     customTerminalConfig.writeEntry("new_params", m_ui->createSessionParameters->text());
 
     for (const auto &key:shortcutConfig.keyList()) {
@@ -135,8 +135,8 @@ void TmuxRunnerConfig::save() {
 
 void TmuxRunnerConfig::customOptionInsertion() {
     m_ui->optionCustom->setEnabled(!m_ui->createSessionParameters->text().isEmpty() &&
-                                   !m_ui->attatchSessionProgram->text().isEmpty() &&
-                                   !m_ui->attatchSessionParameters->text().isEmpty());
+                                   !m_ui->attachSessionProgram->text().isEmpty() &&
+                                   !m_ui->attachSessionParameters->text().isEmpty());
 }
 
 void TmuxRunnerConfig::shortcutInsertion() {

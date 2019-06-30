@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>669</width>
-    <height>593</height>
+    <height>621</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -108,21 +108,21 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="QLabel" name="attatchSessionLabel">
+            <widget class="QLabel" name="attachSessionLabel">
              <property name="text">
               <string>Attatch Session</string>
              </property>
             </widget>
            </item>
            <item alignment="Qt::AlignLeft">
-            <widget class="QLineEdit" name="attatchSessionProgram">
+            <widget class="QLineEdit" name="attachSessionProgram">
              <property name="placeholderText">
               <string>Program</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="attatchSessionParameters">
+            <widget class="QLineEdit" name="attachSessionParameters">
              <property name="placeholderText">
               <string>Parameters</string>
              </property>
