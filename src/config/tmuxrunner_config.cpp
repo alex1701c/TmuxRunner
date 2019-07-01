@@ -57,7 +57,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     if (program == "konsole") m_ui->optionKonsole->setChecked(true);
     else if (program == "yakuake") m_ui->optionYakuake->setChecked(true);
     else if (program == "terminator") m_ui->optionTerminator->setChecked(true);
-    else if (program == "st") m_ui->optionSucklessTerminal->setChecked(true);
+    else if (program == "st") m_ui->optionSimpleTerminal->setChecked(true);
     else if (program == "custom") m_ui->optionCustom->setChecked(true);
 
     m_ui->partlyMatchesOption->setChecked(config.readEntry("add_new_by_part_match", "false") == "true");
@@ -74,7 +74,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     connect(m_ui->optionKonsole, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->optionYakuake, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->optionTerminator, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->optionSucklessTerminal, SIGNAL(clicked(bool)), this, SLOT(changed()));
+    connect(m_ui->optionSimpleTerminal, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->optionCustom, SIGNAL(clicked(bool)), this, SLOT(changed()));
     connect(m_ui->attachSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
     connect(m_ui->attachSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
@@ -112,7 +112,7 @@ void TmuxRunnerConfig::save() {
     if (m_ui->optionKonsole->isChecked()) config.writeEntry("program", "konsole");
     else if (m_ui->optionYakuake->isChecked()) config.writeEntry("program", "yakuake");
     else if (m_ui->optionTerminator->isChecked()) config.writeEntry("program", "terminator");
-    else if (m_ui->optionSucklessTerminal->isChecked()) config.writeEntry("program", "st");
+    else if (m_ui->optionSimpleTerminal->isChecked()) config.writeEntry("program", "st");
     else if (m_ui->optionCustom->isChecked() && m_ui->optionCustom->isEnabled()) config.writeEntry("program", "custom");
     else config.writeEntry("program", "konsole");
 

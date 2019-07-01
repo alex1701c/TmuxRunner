@@ -39,7 +39,7 @@ absolute paths and relative ones, but if you want to reference a directory in yo
 the folder name. For example *Downloads/Bluetooth* gets interpreted as */home/USER/Downloads/Bluetooth*. 
 
 Furthermore you can change the terminal you want tmux to be launched in.
-The default options are: Konsole, Yakuake, Terminator and Suckless Terminal. You can also define a custom terminal.
+The default options are: Konsole, Yakuake, Terminator and Simple Terminal. You can also define a custom terminal.
 If you want to change the terminal for just one command you can add a flag to the end of the statement. 
 The flags start with a *-* and is followed by the lowercase start letter if the option. 
 For example *-y* opens it in Yakuake and *-c* opens it with your custom terminal.

@@ -80,9 +80,9 @@
             </widget>
            </item>
            <item>
-            <widget class="QRadioButton" name="optionSucklessTerminal">
+            <widget class="QRadioButton" name="optionSimpleTerminal">
              <property name="text">
-              <string>Suckless Terminal (st)</string>
+              <string>Simple Terminal (st)</string>
              </property>
             </widget>
            </item>
