@@ -1,20 +1,3 @@
-/*
-   Copyright 2019 by Alex <alexkp12355@gmail.com>
-
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this library.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #include "tmuxrunner.h"
 
 // KF
@@ -33,6 +16,19 @@ TmuxRunner::~TmuxRunner() = default;
 
 void TmuxRunner::init() {
     config = KSharedConfig::openConfig("krunnerrc")->group("Runners").group("TmuxRunner");
+    if (config.readEntry("enable_tmuxinator", "true") == "true") {
+        QProcess process;
+        process.start("tmuxinator ls");
+        process.waitForFinished();
+        const QString res = process.readAll();
+        if (res.split('\n').size() == 2) return;
+        const auto entries = res.split('\n').at(1).split(' ');
+        for (const auto &entry:entries) {
+            if (entry.isEmpty()) continue;
+            tmuxinatorConfigs.append(entry);
+        }
+    }
+    qInfo() << tmuxinatorConfigs;
     connect(this, SIGNAL(prepare()), this, SLOT(prepareForMatchSession()));
 }
 
@@ -54,7 +50,8 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     if (!context.isValid()) return;
     QString term = context.query();
     if (!term.startsWith("tmux")) return;
-    term.replace(QRegExp("tmux *"), "");
+    term.replace(QRegExp("tmux +"), "");
+    qInfo() << term;
     QList<Plasma::QueryMatch> matches;
     bool exactMatch = false;
 
@@ -75,13 +72,28 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
             exp.indexIn(term);
             QString match = exp.capturedTexts().last();
             if (match == "k") { data.insert("program", "konsole"); }
-            else if (match == "y") { data.insert("program", "yakuake"); }
+            else if (match == "y") { data.insert("program", "yakuake-session"); }
             else if (match == "t") { data.insert("program", "terminator"); }
             else if (match == "s") { data.insert("program", "st"); }
             else if (match == "c") { data.insert("program", "custom"); }
             tmpTerm.remove(QRegExp(" ?-([a-z])$"));
             term.remove(QRegExp(" ?-([a-z])$"));
             openIn = " in " + data.value("program").toString();
+        }
+    }
+    // New Session with Tmuxinator
+    if (term.startsWith("tmuxinator")) {
+        for (const auto &tmuxinatorConfig:tmuxinatorConfigs) {
+            if (!tmuxSessions.contains(tmuxinatorConfig)) {
+                matches.append(
+                        addMatch("Create Tmuxinator  " + tmuxinatorConfig + openIn,
+                                 {
+                                         {"action",  "tmuxinator"},
+                                         {"program", data.value("program", "konsole")},
+                                         {"target",  tmuxinatorConfig}
+                                 }, 1)
+                );
+            }
         }
     }
     // Attach to session options
@@ -91,8 +103,9 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
             data.insert("action", "attach");
             data.insert("target", session);
             matches.append(
-                    addMatch("Attatch to " + session + openIn, data,
-                             (float) tmpTerm.length() / session.length()));
+                    addMatch("Attatch to " + session + QString(openIn).replace("-session", ""), data,
+                             (float) tmpTerm.length() / session.length())
+            );
         }
     }
     // New session
@@ -106,12 +119,16 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
         data.insert("target", texts.at(1));
         // No path
         if (texts.size() == 2 || texts.at(2).isEmpty()) {
-            matches.append(addMatch("New session " + texts.at(1) + openIn, data, relevance));
+            matches.append(
+                    addMatch("New session " + texts.at(1) + QString(openIn).replace("-session", ""), data, relevance)
+            );
             // With path
         } else if (texts.size() == 3) {
             data.insert("path", texts.at(2));
             matches.append(
-                    addMatch("New session " + texts.at(1) + " in " + texts.at(2) + openIn, data, relevance));
+                    addMatch("New session " + texts.at(1) + " in " + texts.at(2) +
+                             QString(openIn).replace("-session", ""), data, relevance)
+            );
         }
     }
 
@@ -127,8 +144,7 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
 
     if (data.value("action") == "attach") {
         QStringList args = {"-e", "tmux", "a", "-t", target};
-        if (program == "yakuake") {
-            program = "yakuake-session";
+        if (program == "yakuake-session") {
             args.clear();
             args.append({"-t", target, "-e", "tmux", "attach-session", "-t", target});
         } else if (program == "terminator") {
@@ -147,26 +163,28 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
         }
         QProcess::startDetached(program, args);
     } else {
-        QStringList args = {"-e", "tmux", "new-session", "-s", target};
+        QStringList args;
         if (program == "yakuake") {
-            program = "yakuake-session";
-            args.clear();
-            args.append({"-t", target, "-e", "tmux", "new-session", "-s", target});
+            if (data.value("action") != "tmuxinator")
+                args.append({"-t", target, "-e", "tmux", "new-session", "-s", target});
+            else args.append({"-t", target, "-e", "tmuxinator", target});
         } else if (program == "terminator") {
-            args.clear();
-            args.append({"-x", "tmux", "new-session", "-s", target});
+            if (data.value("action") != "tmuxinator") args.append({"-x", "tmux", "new-session", "-s", target});
+            else args.append({"-x", "tmuxinator", target});
         } else if (program == "st") {
-            args.clear();
-            args.append({"tmux", "new-session", "-s", target});
+            if (data.value("action") != "tmuxinator") args.append({"tmux", "new-session", "-s", target});
+            else args.append({"tmuxinator", target});
         } else if (program == "custom") {
             const auto customConfig = config.group("Custom");
             program = customConfig.readEntry("program");
-            args.clear();
             QString arg = customConfig.readEntry("new_params");
             arg.replace("%name", target);
             arg.replace("%path", filterPath(data.value("path", "").toString()));
-
+            // Remove everything aftert mux and replace
             args.append(arg.split(' '));
+        }
+        if (args.isEmpty()) {
+            args.append({"-e", "tmux", "new-session", "-s", target});
         }
         // Add path option
         if (program != "custom") {
@@ -177,6 +195,11 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
             args.removeOne("-s");
             args.removeOne("-t");
             args.removeAll("");
+        }
+        if (data.value("action") == "tmuxinator") {
+            args.clear();
+            args.append({"tmuxinator", target});
+            qInfo() << program << args;
         }
         QProcess::startDetached(program, args);
     }

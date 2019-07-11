@@ -51,6 +51,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="tmuxinatorEnable">
+        <property name="text">
+         <string>Enable tmuxinator interaction</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QGroupBox" name="groupBox">
         <property name="title">
          <string>Select Default Terminal</string>

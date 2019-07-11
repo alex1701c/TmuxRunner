@@ -50,13 +50,13 @@ the query. This option is enabled in the screenshots (last run option in first t
 ### Screenshots
 
 #### Simple command
-![Simple command](https://raw.githubusercontent.com/alex1701c/TmuxRunner/master/screenshots/overviewtmux.png)
+![Simple command](https://raw.githubusercontent.com/alex1701c/Screenshots/master/TmuxRunner/overviewtmux.png)
 
 #### Search sessions
-![Search sessions](https://raw.githubusercontent.com/alex1701c/TmuxRunner/master/screenshots/tmux_search_sessions.png)
+![Search sessions](https://raw.githubusercontent.com/alex1701c/Screenshots/master/TmuxRunner/tmux_search_sessions.png)
 
 #### Create session using name, shortcut and flag
-![Create session](https://raw.githubusercontent.com/alex1701c/TmuxRunner/master/screenshots/new_session_with%20apth_and_option.png)
+![Create session](https://raw.githubusercontent.com/alex1701c/Screenshots/master/TmuxRunner/new_session_with%20apth_and_option.png)
 
 #### Config dialog, custom option launches tmux in Konsole tabs instead of new window
-![Configure plugin](https://raw.githubusercontent.com/alex1701c/TmuxRunner/master/screenshots/config_dialog.png)
+![Configure plugin](https://raw.githubusercontent.com/alex1701c/Screenshots/master/TmuxRunner/config_dialog.png)
