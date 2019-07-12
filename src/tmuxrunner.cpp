@@ -86,9 +86,9 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     }
     // Session with Tmuxinator
     if (config.readEntry("enable_tmuxinator", "true") == "true" && term.startsWith("inator")) {
-        QRegExp regExp(R"(inator(?: (\w+) *)?)");
+        QRegExp regExp(R"(inator(?: (\w+) *(.+)?)?)");
         regExp.indexIn(term);
-        QString filter = regExp.capturedTexts().size() == 2 ? regExp.capturedTexts().last() : "";
+        QString filter = regExp.capturedTexts().at(1);
         term.replace(QRegExp("^inator *"), "");
         tmuxinator = true;
 
@@ -100,6 +100,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
                                      {
                                              {"action",  "tmuxinator"},
                                              {"program", data.value("program", config.readEntry("program", "konsole"))},
+                                             {"args",    regExp.capturedTexts().last()},
                                              {"target",  tmuxinatorConfig}
                                      }, 1)
                     );
@@ -211,21 +212,21 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
         if (program != "custom") {
             args.append({"-c", filterPath(data.value("path", "").toString())});
         }
-        // If new session is started but no name provided
-        if (target.isEmpty()) {
-            args.removeOne("-s");
-            args.removeOne("-t");
-            args.removeAll("");
-        }
-        qInfo() << program << args;
         if (data.value("action") == "tmuxinator") {
             const int idx = args.indexOf("tmux");
             while (args.size() > idx) {
                 args.removeLast();
             }
             args.append({"tmuxinator", target});
-            qInfo() << program << args;
+            args.append(data.value("args").toString().split(' '));
         }
+
+        // If new session is started but no name provided
+        if (target.isEmpty()) {
+            args.removeOne("-s");
+            args.removeOne("-t");
+        }
+        args.removeAll("");
         QProcess::startDetached(program, args);
     }
 }
