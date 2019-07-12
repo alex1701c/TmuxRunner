@@ -45,10 +45,6 @@ void TmuxRunner::prepareForMatchSession() {
 
 }
 
-// Done Handle create/attach from tmuxinator
-// DONE Enable tmuxiator filter
-// DONE Prevent option from appering iator as name
-// TODO Arguments ?
 void TmuxRunner::match(Plasma::RunnerContext &context) {
     if (!context.isValid()) return;
     QString term = context.query();

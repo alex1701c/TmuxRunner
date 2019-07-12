@@ -47,6 +47,9 @@ For example *-y* opens it in Yakuake and *-c* opens it with your custom terminal
 The option "Show create options for partly matches" allows you to create a session even if any existing session starts with
 the query. This option is enabled in the screenshots (last run option in first two screenshots).
 
+Additionally this plugin supports tmuxinator by letting you create new sessions with parameters/options and attach to existing.
+You can also combine this with the terminal flags as explained above.  
+
 ### Screenshots
 
 #### Simple command
@@ -60,3 +63,9 @@ the query. This option is enabled in the screenshots (last run option in first t
 
 #### Config dialog, custom option launches tmux in Konsole tabs instead of new window
 ![Configure plugin](https://raw.githubusercontent.com/alex1701c/Screenshots/master/TmuxRunner/config_dialog.png)
+
+#### Tmuxinator overview
+![Configure plugin](https://raw.githubusercontent.com/alex1701c/Screenshots/master/TmuxRunner/tmuxinator_overview.png)
+
+#### Tmuxinator create session with arguments and options
+![Configure plugin](https://raw.githubusercontent.com/alex1701c/Screenshots/master/TmuxRunner/tmuxinator_create_args_options.png)
