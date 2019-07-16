@@ -15,7 +15,7 @@ public:
     QList<QString> tmuxSessions;
     QList<QString> tmuxinatorConfigs;
 
-    Plasma::QueryMatch addMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance);
+    Plasma::QueryMatch createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance);
 
     KConfigGroup config;
 
