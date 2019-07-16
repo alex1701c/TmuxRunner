@@ -117,7 +117,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
             data.insert("action", "attach");
             data.insert("target", session);
             matches.append(
-                    addMatch("Attatch to " + session + QString(openIn).replace("-session", ""), data,
+                    addMatch("Attach to " + session + QString(openIn).replace("-session", ""), data,
                              (float) tmpTerm.length() / session.length())
             );
         }
