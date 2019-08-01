@@ -55,6 +55,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     bool tmuxinator = false;
 
     QMap<QString, QVariant> data;
+    QStringList attached;
 
     // Flags to open other terminal emulator
     QString openIn = "";
@@ -93,9 +94,12 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
                                         }, 1)
                     );
                 } else {
+                    attached.append(tmuxinatorConfig);
                     data.insert("action", "attach");
                     data.insert("target", tmuxinatorConfig);
-                    matches.append(createMatch("Attach Tmuxinator  " + tmuxinatorConfig + openIn, data, 0.99));
+                    matches.append(
+                            createMatch("Attach Tmuxinator  " + tmuxinatorConfig + QString(openIn).replace("-session", ""), data, 0.99)
+                    );
                 }
             }
         }
@@ -105,6 +109,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     for (const auto &session:tmuxSessions) {
         if (session.startsWith(queryName)) {
             if (session == queryName) exactMatch = true;
+            if (attached.contains(session)) continue;
             data.insert("action", "attach");
             data.insert("target", session);
             matches.append(
