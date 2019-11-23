@@ -15,19 +15,7 @@ TmuxRunner::~TmuxRunner() = default;
 
 
 void TmuxRunner::init() {
-    config = KSharedConfig::openConfig("krunnerrc")->group("Runners").group("TmuxRunner");
-    if (config.readEntry("enable_tmuxinator", "true") == "true") {
-        QProcess process;
-        process.start("tmuxinator ls");
-        process.waitForFinished();
-        const QString res = process.readAll();
-        if (res.split('\n').size() == 2) return;
-        const auto entries = res.split('\n').at(1).split(' ');
-        for (const auto &entry:entries) {
-            if (entry.isEmpty()) continue;
-            tmuxinatorConfigs.append(entry);
-        }
-    }
+    reloadConfiguration();
     connect(this, SIGNAL(prepare()), this, SLOT(prepareForMatchSession()));
 }
 
@@ -45,6 +33,39 @@ void TmuxRunner::prepareForMatchSession() {
 
 }
 
+void TmuxRunner::reloadConfiguration() {
+    config = KSharedConfig::openConfig("krunnerrc")->group("Runners").group("TmuxRunner");
+    enableTmuxinator = config.readEntry("enable_tmuxinator", "true") == "true";
+    enableFlags = config.readEntry("enable_flags", "true") == "true";
+    enableNewSessionByPartlyMatch = config.readEntry("add_new_by_part_match") == "true";
+    defaultProgram = config.readEntry("program", "konsole");
+    if (enableTmuxinator) {
+        // Check if tmuxinator is installed
+        QProcess isTmuxinatorInstalledProcess;
+        isTmuxinatorInstalledProcess.start("whereis", QStringList() << "-b" << "tmuxinator");
+        isTmuxinatorInstalledProcess.waitForFinished();
+        if (QString(isTmuxinatorInstalledProcess.readAll()) == "tmuxinator:\n") {
+            // Disable tmuxinator until the user installs and enables it
+            enableTmuxinator = false;
+            config.writeEntry("enable_tmuxinator", "false");
+            return;
+        }
+        // Fetch the available configurations
+        QProcess process;
+        process.start("tmuxinator ls");
+        process.waitForFinished();
+        const QString res = process.readAll();
+        if (res.split('\n').size() == 2) return;
+        const auto _entries = res.split('\n');
+        if (_entries.size() < 2) return;
+        const auto entries = _entries.at(1).split(' ');
+        for (const auto &entry:entries) {
+            if (entry.isEmpty()) continue;
+            tmuxinatorConfigs.append(entry);
+        }
+    }
+}
+
 void TmuxRunner::match(Plasma::RunnerContext &context) {
     if (!context.isValid()) return;
     QString term = context.query();
@@ -54,12 +75,12 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     bool exactMatch = false;
     bool tmuxinator = false;
 
-    QMap<QString, QVariant> data;
+    QMap<QString, QVariant> data = {};
     QStringList attached;
 
     // Flags to open other terminal emulator
     QString openIn = "";
-    if (config.readEntry("enable_flags", "true") == "true") {
+    if (enableFlags) {
         // Flag at end of query or just a flag with no session name
         if (term.contains(QRegExp(" -([a-z])$")) || (term.size() == 2 && term.contains(QRegExp("-([a-z])$")))) {
             QRegExp exp("-([a-z])$");
@@ -75,7 +96,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
         }
     }
     // Session with Tmuxinator
-    if (config.readEntry("enable_tmuxinator", "true") == "true" && term.startsWith("inator")) {
+    if (enableTmuxinator && term.startsWith("inator")) {
         QRegExp regExp(R"(inator(?: (\w+) *(.+)?)?)");
         regExp.indexIn(term);
         QString filter = regExp.capturedTexts().at(1);
@@ -88,7 +109,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
                             createMatch("Create Tmuxinator  " + tmuxinatorConfig + openIn,
                                         {
                                                 {"action",  "tmuxinator"},
-                                                {"program", data.value("program", config.readEntry("program", "konsole"))},
+                                                {"program", data.value("program", defaultProgram)},
                                                 {"args",    regExp.capturedTexts().last()},
                                                 {"target",  tmuxinatorConfig}
                                         }, 1)
@@ -119,7 +140,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
         }
     }
     // New session
-    if (!exactMatch && (matches.isEmpty() || config.readEntry("add_new_by_part_match", "false") == "true")) {
+    if (!exactMatch && (matches.isEmpty() || enableNewSessionByPartlyMatch)) {
         // Name and optional path, Online tester : https://regex101.com/r/FdZcIZ/1
         QRegExp regex(R"(^([\w-]+)(?: +(.+)?)?$)");
         regex.indexIn(term);
@@ -152,7 +173,7 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
     Q_UNUSED(context)
 
     QMap<QString, QVariant> data = match.data().toMap();
-    QString program = data.value("program", config.readEntry("program", "konsole")).toString();
+    QString program = data.value("program", defaultProgram).toString();
     const QString target = data.value("target").toString();
     QStringList args;
 
@@ -219,6 +240,7 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
     }
 }
 
+
 QString TmuxRunner::filterPath(QString path) {
     if (path.isEmpty()) return QDir::homePath();
     const auto shortcutConfig = config.group("Shortcuts");
@@ -232,7 +254,6 @@ QString TmuxRunner::filterPath(QString path) {
     }
     return path;
 }
-
 
 Plasma::QueryMatch TmuxRunner::createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance) {
     Plasma::QueryMatch match(this);
