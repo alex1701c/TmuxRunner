@@ -32,7 +32,7 @@ Fedora:
 `sudo dnf install cmake extra-cmake-modules kf5-ki18n-devel kf5-kservice-devel kf5-krunner-devel kf5-ktextwidgets-devel gettext tmux wmctrl`  
 
 Archlinux(Manjaro):  
-`sudo pacman -S cmake extra-cmake-modules tmux` 
+`sudo pacman -S cmake extra-cmake-modules tmux wmctrl` 
     
 ### Build instructions
 
