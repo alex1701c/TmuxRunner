@@ -3,6 +3,7 @@
 // KF
 #include <KLocalizedString>
 #include <QtGui/QtGui>
+#include <QtCore>
 #include <KSharedConfig>
 
 
@@ -15,8 +16,23 @@ TmuxRunner::~TmuxRunner() = default;
 
 
 void TmuxRunner::init() {
-    reloadConfiguration();
+    const QString configFolder = QDir::homePath() + "/.config/krunnerplugins/";
+    const QDir configDir(configFolder);
+    if (!configDir.exists()) configDir.mkpath(configFolder);
+    // Create file
+    QFile configFile(configFolder + "tmuxrunnerrc");
+    if (!configFile.exists()) {
+        configFile.open(QIODevice::WriteOnly);
+        configFile.close();
+    }
+    // Add file watcher for config
+    watcher.addPath(configFolder + "tmuxrunnerrc");
+    connect(&watcher, SIGNAL(fileChanged(QString)), this, SLOT(reloadPluginConfiguration(QString)));
     connect(this, SIGNAL(prepare()), this, SLOT(prepareForMatchSession()));
+
+    config = KSharedConfig::openConfig(QDir::homePath() + "/.config/krunnerplugins/tmuxrunnerrc")->group("Config");
+
+    reloadPluginConfiguration();
 }
 
 void TmuxRunner::prepareForMatchSession() {
@@ -33,12 +49,24 @@ void TmuxRunner::prepareForMatchSession() {
 
 }
 
-void TmuxRunner::reloadConfiguration() {
-    config = KSharedConfig::openConfig("krunnerrc")->group("Runners").group("TmuxRunner");
+/**
+ * Call method whenever the config file changes, the normal reloadConfiguration method gets called to often
+ */
+void TmuxRunner::reloadPluginConfiguration(const QString &path) {
+    // Method was triggered using file watcher => get new state from file
+    if (!path.isEmpty()) config.config()->reparseConfiguration();
     enableTmuxinator = config.readEntry("enable_tmuxinator", "true") == "true";
     enableFlags = config.readEntry("enable_flags", "true") == "true";
     enableNewSessionByPartlyMatch = config.readEntry("add_new_by_part_match") == "true";
     defaultProgram = config.readEntry("program", "konsole");
+
+    // If the file gets edited with a text editor, it often gets replaced by the edited version
+    // https://stackoverflow.com/a/30076119/9342842
+    if (!path.isEmpty()) {
+        if (QFile::exists(path)) {
+            watcher.addPath(path);
+        }
+    }
     if (enableTmuxinator) {
         // Check if tmuxinator is installed
         QProcess isTmuxinatorInstalledProcess;
@@ -59,6 +87,7 @@ void TmuxRunner::reloadConfiguration() {
         const auto _entries = res.split('\n');
         if (_entries.size() < 2) return;
         const auto entries = _entries.at(1).split(' ');
+        tmuxinatorConfigs.clear();
         for (const auto &entry:entries) {
             if (entry.isEmpty()) continue;
             tmuxinatorConfigs.append(entry);
@@ -85,14 +114,15 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
         if (term.contains(QRegExp(" -([a-z])$")) || (term.size() == 2 && term.contains(QRegExp("-([a-z])$")))) {
             QRegExp exp("-([a-z])$");
             exp.indexIn(term);
-            QString match = exp.capturedTexts().last();
-            if (match == "k") { data.insert("program", "konsole"); }
-            else if (match == "y") { data.insert("program", "yakuake-session"); }
-            else if (match == "t") { data.insert("program", "terminator"); }
-            else if (match == "s") { data.insert("program", "st"); }
-            else if (match == "c") { data.insert("program", "custom"); }
+            const QString flag = exp.capturedTexts().at(1);
+            QString flagValue = flags.value(flag, "");
+            if (!flagValue.isEmpty()) {
+                data.insert("program", flagValue);
+                openIn = " in " + flagValue.remove("-session");
+            } else {
+                openIn = " default (invalid flag)";
+            }
             term.remove(QRegExp(" ?-([a-z])$"));
-            openIn = " in " + data.value("program").toString();
         }
     }
     // Session with Tmuxinator
@@ -119,7 +149,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
                     data.insert("action", "attach");
                     data.insert("target", tmuxinatorConfig);
                     matches.append(
-                            createMatch("Attach Tmuxinator  " + tmuxinatorConfig + QString(openIn).replace("-session", ""), data, 0.99)
+                            createMatch("Attach Tmuxinator  " + tmuxinatorConfig + openIn, data, 0.99)
                     );
                 }
             }
@@ -134,8 +164,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
             data.insert("action", "attach");
             data.insert("target", session);
             matches.append(
-                    createMatch("Attach to " + session + QString(openIn).replace("-session", ""), data,
-                                (float) queryName.length() / session.length())
+                    createMatch("Attach to " + session + openIn, data, (float) queryName.length() / session.length())
             );
         }
     }
@@ -152,16 +181,13 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
         // No path
         if (texts.at(2).isEmpty()) {
             if (!texts.at(1).isEmpty() || !tmuxinator) {
-                matches.append(
-                        createMatch("New session " + texts.at(1) + QString(openIn).replace("-session", ""), data, relevance)
-                );
+                matches.append(createMatch("New session " + texts.at(1) + openIn, data, relevance));
             }
             // With path
         } else {
             data.insert("path", texts.at(2));
             matches.append(
-                    createMatch("New session " + texts.at(1) + " in " + texts.at(2) +
-                                QString(openIn).replace("-session", ""), data, relevance)
+                    createMatch("New session " + texts.at(1) + " in " + texts.at(2) + openIn, data, relevance)
             );
         }
     }

@@ -18,7 +18,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     auto *layout = new QGridLayout(this);
     layout->addWidget(m_ui, 0, 0);
 
-    config = KSharedConfig::openConfig("krunnerrc")->group("Runners").group("TmuxRunner");
+    config = KSharedConfig::openConfig(QDir::homePath() + "/.config/krunnerplugins/tmuxrunnerrc")->group("Config");
     shortcutConfig = config.group("Shortcuts");
     customTerminalConfig = config.group("Custom");
 

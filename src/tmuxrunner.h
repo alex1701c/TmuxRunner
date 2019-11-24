@@ -2,6 +2,7 @@
 #define TMUXRUNNER_H
 
 #include <KRunner/AbstractRunner>
+#include <QtCore>
 #include <KSharedConfig>
 
 class TmuxRunner : public Plasma::AbstractRunner {
@@ -12,6 +13,7 @@ public:
 
     ~TmuxRunner() override;
 
+    QFileSystemWatcher watcher;
     QList<QString> tmuxSessions;
     QList<QString> tmuxinatorConfigs;
 
@@ -22,6 +24,13 @@ public:
     bool enableTmuxinator, enableFlags, enableNewSessionByPartlyMatch;
     // Default program used for launching sessions, can be overwritten using flags
     QString defaultProgram;
+    const QMap<QString, QString> flags = {
+            {"k", "konsole"},
+            {"y", "yakuake-session"},
+            {"t", "terminator"},
+            {"s", "st"},
+            {"c", "custom"},
+    };
 
     QString filterPath(QString path);
 
@@ -30,7 +39,7 @@ protected Q_SLOTS:
 
     void init() override;
 
-    void reloadConfiguration() override;
+    void reloadPluginConfiguration(const QString &path = "");
 
     void prepareForMatchSession();
 

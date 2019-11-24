@@ -8,7 +8,7 @@ fi
 mkdir -p build
 cd build
 cmake -DQT_PLUGIN_INSTALL_DIR=`kf5-config --qt-plugins` ..
-make -j2
+make -j$(nproc)
 sudo make install
 sudo curl https://raw.githubusercontent.com/aplatanado/yakuake-session/master/yakuake-session -o /usr/bin/yakuake-session
 sudo chmod +x /usr/bin/yakuake-session
