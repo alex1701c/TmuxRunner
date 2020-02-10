@@ -52,35 +52,33 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
 
     m_ui->shortcutAddButton->setEnabled(false);
     m_ui->shortcutDeleteButton->setEnabled(false);
+    const auto changedSlotPointer = static_cast<void (TmuxRunnerConfig::*)()>(&TmuxRunnerConfig::changed);
 
-    connect(m_ui->partlyMatchesOption, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->flags, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->tmuxinatorEnable, SIGNAL(clicked(bool)), this, SLOT(changed()));
+    connect(m_ui->partlyMatchesOption, &QCheckBox::clicked, this, changedSlotPointer);
+    connect(m_ui->flags, &QCheckBox::clicked, this, changedSlotPointer);
+    connect(m_ui->tmuxinatorEnable, &QCheckBox::clicked, this, changedSlotPointer);
     // Terminals
-    connect(m_ui->optionKonsole, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->optionYakuake, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->optionTerminator, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->optionSimpleTerminal, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->optionCustom, SIGNAL(clicked(bool)), this, SLOT(changed()));
+    connect(m_ui->optionKonsole, &QCheckBox::clicked, this, changedSlotPointer);
+    connect(m_ui->optionYakuake, &QCheckBox::clicked, this, changedSlotPointer);
+    connect(m_ui->optionTerminator, &QCheckBox::clicked, this, changedSlotPointer);
+    connect(m_ui->optionSimpleTerminal, &QCheckBox::clicked, this, changedSlotPointer);
+    connect(m_ui->optionCustom, &QCheckBox::clicked, this, changedSlotPointer);
     // Enable/Disable custom option
-    connect(m_ui->attachSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
-    connect(m_ui->attachSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
-    connect(m_ui->createSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(customOptionInsertion()));
+    connect(m_ui->attachSessionProgram, &QLineEdit::textChanged, this, &TmuxRunnerConfig::customOptionInsertion);
+    connect(m_ui->attachSessionParameters, &QLineEdit::textChanged, this, &TmuxRunnerConfig::customOptionInsertion);
+    connect(m_ui->createSessionParameters, &QLineEdit::textChanged, this, &TmuxRunnerConfig::customOptionInsertion);
     // Custom Terminal
-    connect(m_ui->attachSessionProgram, SIGNAL(textChanged(QString)), this, SLOT(changed()));
-    connect(m_ui->attachSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(changed()));
-    connect(m_ui->createSessionParameters, SIGNAL(textChanged(QString)), this, SLOT(changed()));
+    connect(m_ui->attachSessionProgram, &QLineEdit::textChanged, this, changedSlotPointer);
+    connect(m_ui->attachSessionParameters, &QLineEdit::textChanged, this, changedSlotPointer);
+    connect(m_ui->createSessionParameters, &QLineEdit::textChanged, this, changedSlotPointer);
     // Shortcuts
-    connect(m_ui->shortcutAddButton, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->shortcutDeleteButton, SIGNAL(clicked(bool)), this, SLOT(changed()));
-    connect(m_ui->shortcutAddButton, SIGNAL(clicked(bool)), this, SLOT(addShortcut()));
-    connect(m_ui->shortcutDeleteButton, SIGNAL(clicked(bool)), this, SLOT(deleteShortcut()));
-    connect(m_ui->shortcutKey, SIGNAL(textChanged(QString)), this, SLOT(shortcutInsertion()));
-    connect(m_ui->shortcutPath, SIGNAL(textChanged(QString)), this, SLOT(shortcutInsertion()));
-    connect(m_ui->shortcutList, SIGNAL(currentTextChanged(QString)), this, SLOT(shortcutInsertion()));
-
-
-    load();
+    connect(m_ui->shortcutAddButton, &QPushButton::clicked, this, changedSlotPointer);
+    connect(m_ui->shortcutDeleteButton, &QPushButton::clicked, this, changedSlotPointer);
+    connect(m_ui->shortcutAddButton, &QPushButton::clicked, this, &TmuxRunnerConfig::addShortcut);
+    connect(m_ui->shortcutDeleteButton, &QPushButton::clicked, this, &TmuxRunnerConfig::deleteShortcut);
+    connect(m_ui->shortcutKey, &QLineEdit::textChanged, this, &TmuxRunnerConfig::shortcutInsertion);
+    connect(m_ui->shortcutPath, &QLineEdit::textChanged, this, &TmuxRunnerConfig::shortcutInsertion);
+    connect(m_ui->shortcutList, &QListWidget::currentTextChanged, this, &TmuxRunnerConfig::shortcutInsertion);
 }
 
 
@@ -114,11 +112,10 @@ void TmuxRunnerConfig::save() {
     for (const auto &key:shortcutConfig.keyList()) {
         shortcutConfig.deleteEntry(key);
     }
-    for (int i = 0; i < m_ui->shortcutList->count(); i++) {
+    for (int i = 0, count = m_ui->shortcutList->count(); i < count; i++) {
         const auto split = m_ui->shortcutList->item(i)->text().split(" ==> ");
         shortcutConfig.writeEntry(split.first(), split.last());
     }
-    emit changed();
 }
 
 void TmuxRunnerConfig::customOptionInsertion() {

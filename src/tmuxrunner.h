@@ -24,6 +24,12 @@ public:
     bool enableTmuxinator, enableFlags, enableNewSessionByPartlyMatch;
     // Default program used for launching sessions, can be overwritten using flags
     QString defaultProgram;
+
+    // Reusable variables
+    const QLatin1String triggerWord = QLatin1String("tmux");
+    const QRegularExpression formatQueryRegex = QRegularExpression("tmux *");
+    const QIcon icon = QIcon::fromTheme("utilities-terminal");
+    const QLatin1Char lineSeparator = QLatin1Char(':');
     const QMap<QString, QString> flags = {
             {"k", "konsole"},
             {"y", "yakuake-session"},
@@ -31,8 +37,6 @@ public:
             {"s", "st"},
             {"c", "custom"},
     };
-
-    QString filterPath(QString path);
 
 
 protected Q_SLOTS:
@@ -43,10 +47,12 @@ protected Q_SLOTS:
 
     void prepareForMatchSession();
 
-public: // Plasma::AbstractRunner API
+public:
     void match(Plasma::RunnerContext &context) override;
 
     void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
+
+    QString filterPath(QString path);
 };
 
 #endif
