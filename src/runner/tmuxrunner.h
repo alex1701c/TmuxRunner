@@ -4,6 +4,7 @@
 #include <KRunner/AbstractRunner>
 #include <QtCore>
 #include <KSharedConfig>
+#include "core/TmuxRunnerAPI.h"
 
 class TmuxRunner : public Plasma::AbstractRunner {
 Q_OBJECT
@@ -29,7 +30,6 @@ public:
     const QLatin1String triggerWord = QLatin1String("tmux");
     const QRegularExpression formatQueryRegex = QRegularExpression("tmux *");
     const QIcon icon = QIcon::fromTheme("utilities-terminal");
-    const QLatin1Char lineSeparator = QLatin1Char(':');
     const QMap<QString, QString> flags = {
             {"k", "konsole"},
             {"y", "yakuake-session"},
@@ -38,6 +38,7 @@ public:
             {"c", "custom"},
     };
 
+    TmuxRunnerAPI *api;
 
 protected Q_SLOTS:
 
@@ -52,7 +53,6 @@ public:
 
     void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
 
-    QString filterPath(QString path);
 };
 
 #endif

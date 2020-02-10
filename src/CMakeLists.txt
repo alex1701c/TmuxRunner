@@ -1,11 +1,11 @@
 add_definitions(-DTRANSLATION_DOMAIN=\"plasma_runner_org.kde.tmuxrunner\")
 
-set(tmuxrunner_SRCS tmuxrunner.cpp)
+set(tmuxrunner_SRCS runner/tmuxrunner.cpp core/TmuxRunnerAPI.cpp)
 
 add_library(krunner_tmuxrunner MODULE ${tmuxrunner_SRCS})
 target_link_libraries(krunner_tmuxrunner KF5::Runner KF5::I18n)
 
-set(kcm_krunner_tmuxrunner_SRCS config/tmuxrunner_config.cpp)
+set(kcm_krunner_tmuxrunner_SRCS config/tmuxrunner_config.cpp core/TmuxRunnerAPI.cpp core/TmuxRunnerAPI.h)
 
 ki18n_wrap_ui(kcm_krunner_tmuxrunner_SRCS config/tmuxrunner_config.ui)
 add_library(kcm_krunner_tmuxrunner MODULE ${kcm_krunner_tmuxrunner_SRCS})
@@ -22,4 +22,4 @@ target_link_libraries(kcm_krunner_tmuxrunner
 add_dependencies(krunner_tmuxrunner kcm_krunner_tmuxrunner)
 
 install(TARGETS krunner_tmuxrunner kcm_krunner_tmuxrunner DESTINATION ${KDE_INSTALL_QTPLUGINDIR})
-install(FILES plasma-runner-tmuxrunner.desktop config/plasma-runner-tmuxrunner_config.desktop DESTINATION ${KDE_INSTALL_KSERVICES5DIR})
+install(FILES runner/plasma-runner-tmuxrunner.desktop config/plasma-runner-tmuxrunner_config.desktop DESTINATION ${KDE_INSTALL_KSERVICES5DIR})
