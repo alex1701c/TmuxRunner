@@ -7,6 +7,8 @@
 #include <QtCore/QStringListModel>
 #include <QtCore/QDir>
 
+#include "kcmutils_version.h"
+
 K_PLUGIN_FACTORY(TmuxRunnerConfigFactory, registerPlugin<TmuxRunnerConfig>("kcm_krunner_tmuxrunner");)
 
 TmuxRunnerConfigForm::TmuxRunnerConfigForm(QWidget *parent) : QWidget(parent) {
@@ -29,11 +31,11 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
             m_ui->shortcutList->addItem(key + " ==> " + shortcutConfig.readEntry(key));
         }
     }
-    m_ui->flags->setChecked(config.readEntry("enable_flags", "true") == "true");
-    m_ui->tmuxinatorEnable->setChecked(config.readEntry("enable_tmuxinator", "true") == "true");
-    m_ui->attachSessionProgram->setText(customTerminalConfig.readEntry("program", ""));
-    m_ui->attachSessionParameters->setText(customTerminalConfig.readEntry("attach_params", ""));
-    m_ui->createSessionParameters->setText(customTerminalConfig.readEntry("new_params", ""));
+    m_ui->flags->setChecked(config.readEntry("enable_flags", true));
+    m_ui->tmuxinatorEnable->setChecked(config.readEntry("enable_tmuxinator", true));
+    m_ui->attachSessionProgram->setText(customTerminalConfig.readEntry("program"));
+    m_ui->attachSessionParameters->setText(customTerminalConfig.readEntry("attach_params"));
+    m_ui->createSessionParameters->setText(customTerminalConfig.readEntry("new_params"));
 
 
     const auto program = config.readEntry("program", "konsole");
@@ -43,7 +45,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     else if (program == "st") m_ui->optionSimpleTerminal->setChecked(true);
     else if (program == "custom") m_ui->optionCustom->setChecked(true);
 
-    m_ui->partlyMatchesOption->setChecked(config.readEntry("add_new_by_part_match", "false") == "true");
+    m_ui->partlyMatchesOption->setChecked(config.readEntry("add_new_by_part_match", false));
     m_ui->optionCustom->setEnabled(
             !m_ui->createSessionParameters->text().isEmpty() &&
             !m_ui->attachSessionProgram->text().isEmpty() &&
@@ -52,7 +54,12 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
 
     m_ui->shortcutAddButton->setEnabled(false);
     m_ui->shortcutDeleteButton->setEnabled(false);
+
+#if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
+    const auto changedSlotPointer = &TmuxRunnerConfig::markAsChanged;
+#else
     const auto changedSlotPointer = static_cast<void (TmuxRunnerConfig::*)()>(&TmuxRunnerConfig::changed);
+#endif
 
     connect(m_ui->partlyMatchesOption, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->flags, &QCheckBox::clicked, this, changedSlotPointer);
@@ -89,7 +96,11 @@ void TmuxRunnerConfig::defaults() {
     m_ui->optionKonsole->setChecked(true);
     m_ui->tmuxinatorEnable->setChecked(true);
 
+#if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
+    emit markAsChanged();
+#else
     emit changed(true);
+#endif
 }
 
 void TmuxRunnerConfig::save() {
@@ -112,7 +123,7 @@ void TmuxRunnerConfig::save() {
     for (const auto &key:shortcutConfig.keyList()) {
         shortcutConfig.deleteEntry(key);
     }
-    for (int i = 0, count = m_ui->shortcutList->count(); i < count; i++) {
+    for (int i = 0, count = m_ui->shortcutList->count(); i < count; ++i) {
         const auto split = m_ui->shortcutList->item(i)->text().split(" ==> ");
         shortcutConfig.writeEntry(split.first(), split.last());
     }

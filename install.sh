@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Exit if something fails
+set -e
+
 if [[ $(basename "$PWD") != "TmuxRunner"* ]];then
     git clone https://github.com/alex1701c/TmuxRunner
     cd TmuxRunner/
@@ -7,7 +10,7 @@ fi
 
 mkdir -p build
 cd build
-cmake -DQT_PLUGIN_INSTALL_DIR=`kf5-config --qt-plugins` ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
 sudo make install
 sudo curl https://raw.githubusercontent.com/aplatanado/yakuake-session/master/yakuake-session -o /usr/bin/yakuake-session
