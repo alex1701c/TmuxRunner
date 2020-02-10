@@ -30,13 +30,6 @@ public:
     const QLatin1String triggerWord = QLatin1String("tmux");
     const QRegularExpression formatQueryRegex = QRegularExpression("tmux *");
     const QIcon icon = QIcon::fromTheme("utilities-terminal");
-    const QMap<QString, QString> flags = {
-            {"k", "konsole"},
-            {"y", "yakuake-session"},
-            {"t", "terminator"},
-            {"s", "st"},
-            {"c", "custom"},
-    };
 
     TmuxRunnerAPI *api;
 

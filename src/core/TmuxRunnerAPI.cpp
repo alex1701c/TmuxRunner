@@ -105,3 +105,49 @@ void TmuxRunnerAPI::executeCreateCommand(QString &program,
     QProcess::startDetached(program, args);
 
 }
+
+QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs() {
+    QStringList tmuxinatorConfigs;
+    QProcess isTmuxinatorInstalledProcess;
+    isTmuxinatorInstalledProcess.start("whereis", QStringList() << "-b" << "tmuxinator");
+    isTmuxinatorInstalledProcess.waitForFinished();
+    if (QString(isTmuxinatorInstalledProcess.readAll()) == "tmuxinator:\n") {
+        // Disable tmuxinator until the user installs and enables it
+        config.writeEntry("enable_tmuxinator", false);
+        return tmuxinatorConfigs;
+    }
+    // Fetch the available configurations
+    QProcess process;
+    process.start("tmuxinator ls");
+    process.waitForFinished(2);
+    const QString res = process.readAll();
+    if (res.split('\n').size() == 2) {
+        return tmuxinatorConfigs;
+    }
+    const auto _entries = res.split('\n');
+    if (_entries.size() < 2) {
+        return tmuxinatorConfigs;
+    }
+    const auto entries = _entries.at(1).split(' ');
+    for (const auto &entry:entries) {
+        if (!entry.isEmpty()) {
+            tmuxinatorConfigs.append(entry);
+        }
+    }
+    return tmuxinatorConfigs;
+}
+
+void TmuxRunnerAPI::parseQueryFlags(QString &term, QString &openIn, QMap<QString, QVariant> &data) {
+    // Flag at end of query or just a flag with no session name
+    if (term.size() >= 2 && term.contains(queryHasFlag)) {
+        const QString flag = queryHasFlag.match(term).captured(1);
+        QString flagValue = flags.value(flag);
+        if (!flagValue.isEmpty()) {
+            data.insert("program", flagValue);
+            openIn = " in " + flagValue.remove("-session");
+        } else {
+            openIn = " default (invalid flag)";
+        }
+        term.remove(queryHasFlag);
+    }
+}

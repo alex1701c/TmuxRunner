@@ -61,35 +61,8 @@ void TmuxRunner::reloadPluginConfiguration(const QString &path) {
         }
     }
     if (enableTmuxinator) {
-        // Check if tmuxinator is installed
-        QProcess isTmuxinatorInstalledProcess;
-        isTmuxinatorInstalledProcess.start("whereis", QStringList() << "-b" << "tmuxinator");
-        isTmuxinatorInstalledProcess.waitForFinished();
-        if (QString(isTmuxinatorInstalledProcess.readAll()) == "tmuxinator:\n") {
-            // Disable tmuxinator until the user installs and enables it
-            enableTmuxinator = false;
-            config.writeEntry("enable_tmuxinator", false);
-            return;
-        }
-        // Fetch the available configurations
-        QProcess process;
-        process.start("tmuxinator ls");
-        process.waitForFinished();
-        const QString res = process.readAll();
-        if (res.split('\n').size() == 2) {
-            return;
-        }
-        const auto _entries = res.split('\n');
-        if (_entries.size() < 2) {
-            return;
-        }
-        const auto entries = _entries.at(1).split(' ');
-        tmuxinatorConfigs.clear();
-        for (const auto &entry:entries) {
-            if (!entry.isEmpty()) {
-                tmuxinatorConfigs.append(entry);
-            }
-        }
+        tmuxinatorConfigs = api->fetchTmuxinatorConfigs();
+        enableTmuxinator = !tmuxinatorConfigs.isEmpty();
     }
 }
 
@@ -105,23 +78,11 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     QStringList attached;
 
     // Flags to open other terminal emulator
-    QString openIn = QString();
+    QString openIn;
     if (enableFlags) {
-        // Flag at end of query or just a flag with no session name
-        if (term.contains(QRegExp(" -([a-z])$")) || (term.size() == 2 && term.contains(QRegExp("-([a-z])$")))) {
-            QRegExp exp("-([a-z])$");
-            exp.indexIn(term);
-            const QString flag = exp.capturedTexts().at(1);
-            QString flagValue = flags.value(flag, "");
-            if (!flagValue.isEmpty()) {
-                data.insert("program", flagValue);
-                openIn = " in " + flagValue.remove("-session");
-            } else {
-                openIn = " default (invalid flag)";
-            }
-            term.remove(QRegExp(" ?-([a-z])$"));
-        }
+        api->parseQueryFlags(term, openIn, data);
     }
+
     // Session with Tmuxinator
     if (enableTmuxinator && term.startsWith("inator")) {
         QRegExp regExp(R"(inator(?: (\w+) *(.+)?)?)");
