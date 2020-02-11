@@ -17,7 +17,7 @@ public:
 
     void executeCreateCommand(QString &program, const QString &target, const QMap<QString, QVariant> &data);
 
-    void parseQueryFlags(QString &term, QString &openIn, QMap<QString, QVariant> &data);
+    QString parseQueryFlags(QString &term, QString &openIn);
 
 
 private:

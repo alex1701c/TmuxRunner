@@ -17,9 +17,6 @@ public:
     QFileSystemWatcher watcher;
     QList<QString> tmuxSessions;
     QList<QString> tmuxinatorConfigs;
-
-    Plasma::QueryMatch createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance);
-
     KConfigGroup config;
 
     bool enableTmuxinator, enableFlags, enableNewSessionByPartlyMatch;
@@ -28,8 +25,11 @@ public:
 
     // Reusable variables
     const QLatin1String triggerWord = QLatin1String("tmux");
-    const QRegularExpression formatQueryRegex = QRegularExpression("tmux *");
+    const QRegularExpression triggerWordRegex = QRegularExpression("tmux *");
     const QIcon icon = QIcon::fromTheme("utilities-terminal");
+    const QLatin1String tmuxinatorQuery = QLatin1String("inator");
+    const QRegularExpression tmuxinatorQueryRegex = QRegularExpression(R"(inator(?: (\w+) *(.+)?)?)");
+    const QRegularExpression tmuxinatorClearRegex = QRegularExpression("^inator *");
 
     TmuxRunnerAPI *api;
 
@@ -45,6 +45,17 @@ public:
     void match(Plasma::RunnerContext &context) override;
 
     void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
+
+    Plasma::QueryMatch createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance);
+
+    QList<Plasma::QueryMatch> addTmuxAttachMatches(QString &term, const QString &openIn, const QString &program,
+                                                   QStringList &attached, bool *exactMatch);
+
+    QList<Plasma::QueryMatch> addTmuxNewSessionMatches(QString &term, const QString &openIn, const QString &program,
+                                                   QStringList &attached, bool *exactMatch);
+
+    QList<Plasma::QueryMatch> addTmuxinatorMatches(QString &term, const QString &openIn, const QString &program,
+                                                   QStringList &attached);
 
 };
 

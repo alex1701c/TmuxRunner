@@ -69,64 +69,33 @@ void TmuxRunner::reloadPluginConfiguration(const QString &path) {
 void TmuxRunner::match(Plasma::RunnerContext &context) {
     QString term = context.query();
     if (!context.isValid() || !term.startsWith(triggerWord)) return;
-    term.remove(formatQueryRegex);
-    QList<Plasma::QueryMatch> matches;
+    term.remove(triggerWordRegex);
+    QList <Plasma::QueryMatch> matches;
     bool exactMatch = false;
     bool tmuxinator = false;
 
-    QMap<QString, QVariant> data;
+    QMap <QString, QVariant> data;
+    QString program = defaultProgram;
     QStringList attached;
 
     // Flags to open other terminal emulator
     QString openIn;
     if (enableFlags) {
-        api->parseQueryFlags(term, openIn, data);
+        QString flagProgram = api->parseQueryFlags(term, openIn);
+        if (!flagProgram.isEmpty()) {
+            program = flagProgram;
+        }
     }
 
     // Session with Tmuxinator
-    if (enableTmuxinator && term.startsWith("inator")) {
-        QRegExp regExp(R"(inator(?: (\w+) *(.+)?)?)");
-        regExp.indexIn(term);
-        QString filter = regExp.capturedTexts().at(1);
-        term.replace(QRegExp("^inator *"), "");
+    if (enableTmuxinator && term.startsWith(tmuxinatorQuery)) {
         tmuxinator = true;
-        for (const auto &tmuxinatorConfig: qAsConst(tmuxinatorConfigs)) {
-            if (tmuxinatorConfig.startsWith(filter)) {
-                if (!tmuxSessions.contains(tmuxinatorConfig)) {
-                    matches.append(
-                            createMatch("Create Tmuxinator  " + tmuxinatorConfig + openIn,
-                                        {
-                                                {"action",  "tmuxinator"},
-                                                {"program", data.value("program", defaultProgram)},
-                                                {"args",    regExp.capturedTexts().last()},
-                                                {"target",  tmuxinatorConfig}
-                                        }, 1)
-                    );
-                } else {
-                    attached.append(tmuxinatorConfig);
-                    data.insert("action", "attach");
-                    data.insert("target", tmuxinatorConfig);
-                    matches.append(
-                            createMatch("Attach Tmuxinator  " + tmuxinatorConfig + openIn, data, 0.99)
-                    );
-                }
-            }
-        }
+        context.addMatches(addTmuxinatorMatches(term, openIn, program, attached));
     }
+
     // Attach to session options
-    const auto queryName = term.contains(' ') ? term.split(' ').first() : term;
-    for (const auto &session:tmuxSessions) {
-        if (session.startsWith(queryName)) {
-            if (session == queryName) exactMatch = true;
-            if (attached.contains(session)) continue;
-            data.insert("action", "attach");
-            data.insert("target", session);
-            matches.append(
-                    createMatch("Attach to " + session + openIn, data,
-                                (float) queryName.length() / (float) session.length())
-            );
-        }
-    }
+    context.addMatches(addTmuxAttachMatches(term, openIn, program, attached, &exactMatch));
+
     // New session
     if (!exactMatch && (matches.isEmpty() || enableNewSessionByPartlyMatch)) {
         // Name and optional path, Online tester : https://regex101.com/r/FdZcIZ/1
@@ -157,10 +126,9 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
 void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
     Q_UNUSED(context)
 
-    QMap<QString, QVariant> data = match.data().toMap();
+    const QMap<QString, QVariant> data = match.data().toMap();
     QString program = data.value("program", defaultProgram).toString();
     const QString target = data.value("target").toString();
-    QStringList args;
 
     if (data.value("action") == "attach") {
         api->executeAttatchCommand(program, target);
@@ -179,6 +147,66 @@ Plasma::QueryMatch TmuxRunner::createMatch(const QString &text, const QMap<QStri
     return match;
 }
 
+QList<Plasma::QueryMatch>
+TmuxRunner::addTmuxinatorMatches(QString &term, const QString &openIn, const QString &program,
+                                 QStringList &attached) {
+    QList <Plasma::QueryMatch> matches;
+    const QRegularExpressionMatch tmuxinatorMatch = tmuxinatorQueryRegex.match(term);
+    term.remove(tmuxinatorClearRegex);
+    const QString filter = tmuxinatorMatch.captured(1);
+    for (const auto &tmuxinatorConfig: qAsConst(tmuxinatorConfigs)) {
+        if (tmuxinatorConfig.startsWith(filter)) {
+            if (!tmuxSessions.contains(tmuxinatorConfig)) {
+                matches.append(
+                        createMatch("Create Tmuxinator  " + tmuxinatorConfig + openIn,
+                                    {
+                                            {"action",  "tmuxinator"},
+                                            {"program", program},
+                                            {"args",    tmuxinatorMatch.captured(2)},
+                                            {"target",  tmuxinatorConfig}
+                                    }, 1)
+                );
+            } else {
+                attached.append(tmuxinatorConfig);
+                matches.append(
+                        createMatch("Attach Tmuxinator  " + tmuxinatorConfig + openIn, {
+                                {"action",  "attach"},
+                                {"program", program},
+                                {"target",  tmuxinatorConfig},
+                        }, 0.99)
+                );
+            }
+        }
+    }
+    return matches;
+}
+
+QList<Plasma::QueryMatch>
+TmuxRunner::addTmuxAttachMatches(QString &term, const QString &openIn, const QString &program,
+                                 QStringList &attached, bool *exactMatch) {
+    QList<Plasma::QueryMatch> matches;
+    const auto queryName = term.contains(' ') ? term.split(' ').first() : term;
+    for (const auto &session:tmuxSessions) {
+        if (session.startsWith(queryName)) {
+            if (session == queryName) *exactMatch = true;
+            if (attached.contains(session)) continue;
+            matches.append(
+                    createMatch("Attach to " + session + openIn,
+                                {{"action",  "attach"},
+                                 {"program", program},
+                                 {"target",  session}},
+                                (float) queryName.length() / (float) session.length())
+            );
+        }
+    }
+    return matches;
+}
+
+QList<Plasma::QueryMatch>
+TmuxRunner::addTmuxNewSessionMatches(QString &term, const QString &openIn, const QString &program,
+                                     QStringList &attached, bool *exactMatch) {
+    return QList<Plasma::QueryMatch>();
+}
 
 K_EXPORT_PLASMA_RUNNER(tmuxrunner, TmuxRunner)
 

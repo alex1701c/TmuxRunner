@@ -119,7 +119,7 @@ QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs() {
     // Fetch the available configurations
     QProcess process;
     process.start("tmuxinator ls");
-    process.waitForFinished(2);
+    process.waitForFinished(2000);
     const QString res = process.readAll();
     if (res.split('\n').size() == 2) {
         return tmuxinatorConfigs;
@@ -137,17 +137,20 @@ QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs() {
     return tmuxinatorConfigs;
 }
 
-void TmuxRunnerAPI::parseQueryFlags(QString &term, QString &openIn, QMap<QString, QVariant> &data) {
+QString TmuxRunnerAPI::parseQueryFlags(QString &term, QString &openIn) {
     // Flag at end of query or just a flag with no session name
+    QString program;
     if (term.size() >= 2 && term.contains(queryHasFlag)) {
         const QString flag = queryHasFlag.match(term).captured(1);
         QString flagValue = flags.value(flag);
         if (!flagValue.isEmpty()) {
-            data.insert("program", flagValue);
+            program = flagValue;
             openIn = " in " + flagValue.remove("-session");
         } else {
             openIn = " default (invalid flag)";
         }
         term.remove(queryHasFlag);
     }
+
+    return program;
 }
