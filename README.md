@@ -23,16 +23,16 @@ You can also combine this with the terminal flags as explained above.
 Required Dependencies
 ----------------------
 Debian/Ubuntu:  
-`sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext wmctrl tmux`
+`sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext libkf5notifications-dev wmctrl tmux`
 
 openSUSE:  
-`sudo zypper install cmake extra-cmake-modules libQt5Widgets5 libQt5Core5 libqt5-qtlocation-devel ki18n-devel ktextwidgets-devel kservice-devel krunner-devel gettext-tools tmux wmctrl`  
+`sudo zypper install cmake extra-cmake-modules libQt5Widgets5 libQt5Core5 libqt5-qtlocation-devel ki18n-devel ktextwidgets-devel kconfigwidgets-devel kservice-devel krunner-devel gettext-tools knotifications-devel tmux wmctrl`  
 
 Fedora:  
-`sudo dnf install cmake extra-cmake-modules kf5-ki18n-devel kf5-kservice-devel kf5-krunner-devel kf5-ktextwidgets-devel gettext tmux wmctrl`  
+`sudo dnf install cmake extra-cmake-modules kf5-ki18n-devel kf5-kservice-devel kf5-krunner-devel kf5-ktextwidgets-devel gettext kf5-knotifications-devel tmux wmctrl`  
 
 Archlinux(Manjaro):  
-`sudo pacman -S cmake extra-cmake-modules tmux wmctrl` 
+`sudo pacman -S cmake extra-cmake-modules knotifications tmux wmctrl` 
     
 ### Build instructions
 
@@ -47,11 +47,12 @@ Or you can do it manually:
 ```
 git clone https://github.com/alex1701c/TmuxRunner
 cd TmuxRunner
-mkdir -p build
+mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 sudo make install
+# Optional for yakuake support
 sudo curl https://raw.githubusercontent.com/aplatanado/yakuake-session/master/yakuake-session -o /usr/bin/yakuake-session
 sudo chmod +x /usr/bin/yakuake-session
 ```

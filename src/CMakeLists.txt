@@ -3,7 +3,7 @@ add_definitions(-DTRANSLATION_DOMAIN=\"plasma_runner_org.kde.tmuxrunner\")
 set(tmuxrunner_SRCS runner/tmuxrunner.cpp core/TmuxRunnerAPI.cpp)
 
 add_library(krunner_tmuxrunner MODULE ${tmuxrunner_SRCS})
-target_link_libraries(krunner_tmuxrunner KF5::Runner KF5::I18n)
+target_link_libraries(krunner_tmuxrunner KF5::Runner KF5::I18n KF5::Notifications)
 
 set(kcm_krunner_tmuxrunner_SRCS config/tmuxrunner_config.cpp core/TmuxRunnerAPI.cpp core/TmuxRunnerAPI.h)
 
@@ -17,6 +17,7 @@ target_link_libraries(kcm_krunner_tmuxrunner
         KF5::I18n
         KF5::ConfigWidgets
         KF5::Runner
+        KF5::Notifications
         )
 
 add_dependencies(krunner_tmuxrunner kcm_krunner_tmuxrunner)

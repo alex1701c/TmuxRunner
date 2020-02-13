@@ -1,9 +1,11 @@
 #include <KConfigCore/KConfigGroup>
+#include <KShell>
+#include <KNotifications/KNotification>
+#include <KMacroExpander>
 #include "TmuxRunnerAPI.h"
 
 
 TmuxRunnerAPI::TmuxRunnerAPI(const KConfigGroup &config) : config(config) {
-
 }
 
 QString TmuxRunnerAPI::filterPath(QString path) {
@@ -45,12 +47,18 @@ void TmuxRunnerAPI::executeAttatchCommand(QString &program, const QString &targe
     } else if (program == "st") {
         args.append({"tmux", "attach-session", "-t", target});
     } else if (program == "custom") {
-        // TODO Use KShell argument splitting
         const auto customConfig = config.group("Custom");
         program = customConfig.readEntry("program");
+        QHash<QString, QString> variables = {{"name", target}};
         QString arg = customConfig.readEntry("attach_params");
-        arg.replace("%name", target);
-        args.append(arg.split(' '));
+        arg = KMacroExpander::expandMacrosShellQuote(arg, variables);
+        const auto splitPair = splitArguments(arg);
+        if (splitPair.first) {
+            args.append(splitPair.second);
+        } else {
+            showErrorNotification("The command line arguments from the custom config are invalid!");
+            return;
+        }
     } else {
         args.append({"-e", "tmux", "a", "-t", target});
     }
@@ -61,6 +69,7 @@ void TmuxRunnerAPI::executeCreateCommand(QString &program,
                                          const QString &target,
                                          const QMap<QString, QVariant> &data) {
     QStringList args;
+    const QString path = filterPath(data.value("path").toString());
     if (program == "yakuake") {
         if (data.value("action") != "tmuxinator")
             args.append({"-t", target, "-e", "tmux", "new-session", "-s", target});
@@ -72,18 +81,25 @@ void TmuxRunnerAPI::executeCreateCommand(QString &program,
         if (data.value("action") != "tmuxinator") args.append({"tmux", "new-session", "-s", target});
         else args.append({"tmuxinator", target});
     } else if (program == "custom") {
-        // TODO Use KShell argument splitting
         const auto customConfig = config.group("Custom");
         program = customConfig.readEntry("program");
         QString arg = customConfig.readEntry("new_params");
-        arg.replace("%name", target);
-        args.append(arg.split(' '));
+        QHash<QString, QString> variables = {{"name", target},
+                                             {"path", path}};
+        arg = KMacroExpander::expandMacrosShellQuote(arg, variables);
+        const auto splitPair = splitArguments(arg);
+        if (splitPair.first) {
+            args.append(splitPair.second);
+        } else {
+            showErrorNotification("The command line arguments from the custom config are invalid!");
+            return;
+        }
     } else {
         args.append({"-e", "tmux", "new-session", "-s", target});
     }
     // Add path option
     if (program != "custom") {
-        args.append({"-c", filterPath(data.value("path").toString())});
+        args.append({"-c", path});
     }
 
     // Remove everything after tmux and replace (workaround for custom)
@@ -93,7 +109,12 @@ void TmuxRunnerAPI::executeCreateCommand(QString &program,
             args.removeLast();
         }
         args.append({"tmuxinator", target});
-        args.append(data.value("args").toString().split(' '));
+        const auto splitPair = splitArguments(data.value("args").toString());
+        if (splitPair.first) {
+            args.append(splitPair.second);
+        } else {
+            showErrorNotification("The command extra arguments for tmuxinator are invalid, continuing without!");
+        }
     }
 
     // If new session is started but no name provided
@@ -101,10 +122,9 @@ void TmuxRunnerAPI::executeCreateCommand(QString &program,
         args.removeOne("-s");
         args.removeOne("-t");
     }
-    args.removeAll("");
+    args.removeAll(QString());
 
     QProcess::startDetached(program, args);
-
 }
 
 QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs() {
@@ -154,4 +174,17 @@ QString TmuxRunnerAPI::parseQueryFlags(QString &term, QString &openIn) {
     }
 
     return program;
+}
+
+QPair<bool, QStringList> TmuxRunnerAPI::splitArguments(const QString &argument) {
+    KShell::Errors splitArgsError;
+    const auto args = KShell::splitArgs(argument, KShell::AbortOnMeta, &splitArgsError);
+    return {splitArgsError == KShell::Errors::NoError, args};
+}
+
+void TmuxRunnerAPI::showErrorNotification(const QString &msg) {
+    KNotification::event(KNotification::Error,
+                         QStringLiteral("Tmux Runner"),
+                         msg,
+                         QStringLiteral("utility-terminal"));
 }

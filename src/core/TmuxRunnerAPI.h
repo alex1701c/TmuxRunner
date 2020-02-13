@@ -19,6 +19,10 @@ public:
 
     QString parseQueryFlags(QString &term, QString &openIn);
 
+    QPair<bool, QStringList> splitArguments(const QString &argument);
+
+    void showErrorNotification(const QString &msg);
+
 
 private:
     const QLatin1Char lineSeparator = QLatin1Char(':');
