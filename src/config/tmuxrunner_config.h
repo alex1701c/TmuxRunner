@@ -36,6 +36,8 @@ public Q_SLOTS:
 
     void shortcutInsertion();
 
+    QPair<bool, QStringList> splitArguments(const QString &arg);
+
 private:
     TmuxRunnerConfigForm *m_ui;
 

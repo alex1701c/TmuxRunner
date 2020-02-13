@@ -4,8 +4,8 @@
 #include <krunner/abstractrunner.h>
 #include <QtWidgets/QGridLayout>
 #include <QDebug>
-#include <QtCore/QStringListModel>
 #include <QtCore/QDir>
+#include <KShell>
 
 #include "kcmutils_version.h"
 
@@ -31,6 +31,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
             m_ui->shortcutList->addItem(key + " ==> " + shortcutConfig.readEntry(key));
         }
     }
+    // TODO use KSplitArgs
     m_ui->flags->setChecked(config.readEntry("enable_flags", true));
     m_ui->tmuxinatorEnable->setChecked(config.readEntry("enable_tmuxinator", true));
     m_ui->attachSessionProgram->setText(customTerminalConfig.readEntry("program"));
@@ -51,9 +52,6 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
             !m_ui->attachSessionProgram->text().isEmpty() &&
             !m_ui->attachSessionParameters->text().isEmpty()
     );
-
-    m_ui->shortcutAddButton->setEnabled(false);
-    m_ui->shortcutDeleteButton->setEnabled(false);
 
 #if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
     const auto changedSlotPointer = &TmuxRunnerConfig::markAsChanged;
@@ -90,7 +88,6 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
 
 
 void TmuxRunnerConfig::defaults() {
-
     m_ui->flags->setChecked(true);
     m_ui->partlyMatchesOption->setChecked(false);
     m_ui->optionKonsole->setChecked(true);
@@ -105,16 +102,17 @@ void TmuxRunnerConfig::defaults() {
 
 void TmuxRunnerConfig::save() {
 
-    if (m_ui->optionKonsole->isChecked()) config.writeEntry("program", "konsole");
-    else if (m_ui->optionYakuake->isChecked()) config.writeEntry("program", "yakuake-session");
-    else if (m_ui->optionTerminator->isChecked()) config.writeEntry("program", "terminator");
-    else if (m_ui->optionSimpleTerminal->isChecked()) config.writeEntry("program", "st");
-    else if (m_ui->optionCustom->isChecked() && m_ui->optionCustom->isEnabled()) config.writeEntry("program", "custom");
-    else config.writeEntry("program", "konsole");
+    QString program;
+    if (m_ui->optionYakuake->isChecked()) program = "yakuake-session";
+    else if (m_ui->optionTerminator->isChecked()) program = "terminator";
+    else if (m_ui->optionSimpleTerminal->isChecked()) program = "st";
+    else if (m_ui->optionCustom->isChecked() && m_ui->optionCustom->isEnabled()) program = "custom";
+    else program = "konsole";
+    config.writeEntry("program", program);
 
-    config.writeEntry("add_new_by_part_match", m_ui->partlyMatchesOption->isChecked() ? "true" : "false");
-    config.writeEntry("enable_flags", m_ui->flags->isChecked() ? "true" : "false");
-    config.writeEntry("enable_tmuxinator", m_ui->tmuxinatorEnable->isChecked() ? "true" : "false");
+    config.writeEntry("add_new_by_part_match", m_ui->partlyMatchesOption->isChecked());
+    config.writeEntry("enable_flags", m_ui->flags->isChecked());
+    config.writeEntry("enable_tmuxinator", m_ui->tmuxinatorEnable->isChecked());
 
     customTerminalConfig.writeEntry("program", m_ui->attachSessionProgram->text());
     customTerminalConfig.writeEntry("attach_params", m_ui->attachSessionParameters->text());
@@ -123,7 +121,7 @@ void TmuxRunnerConfig::save() {
     for (const auto &key:shortcutConfig.keyList()) {
         shortcutConfig.deleteEntry(key);
     }
-    for (int i = 0, count = m_ui->shortcutList->count(); i < count; ++i) {
+    for (int i = 0; i < m_ui->shortcutList->count(); ++i) {
         const auto split = m_ui->shortcutList->item(i)->text().split(" ==> ");
         shortcutConfig.writeEntry(split.first(), split.last());
     }
@@ -151,6 +149,18 @@ void TmuxRunnerConfig::addShortcut() {
 
 void TmuxRunnerConfig::deleteShortcut() {
     m_ui->shortcutList->model()->removeRow(m_ui->shortcutList->currentRow());
+}
+
+QPair<bool, QStringList> TmuxRunnerConfig::splitArguments(const QString &arg) {
+    KShell::Errors splitArgsError;
+    QStringList arguments = KShell::splitArgs(arg, KShell::AbortOnMeta, &splitArgsError);
+
+    // If the arguments could not be split, abort
+    if (splitArgsError != KShell::Errors::NoError) {
+        return {false, QStringList()};
+    }
+
+    return {true, arguments};
 }
 
 

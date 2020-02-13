@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>669</width>
-    <height>621</height>
+    <height>652</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -200,6 +200,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <widget class="QPushButton" name="shortcutAddButton">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Add Shortcut</string>
           </property>
@@ -207,6 +210,9 @@
         </item>
         <item alignment="Qt::AlignLeft">
          <widget class="QPushButton" name="shortcutDeleteButton">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Delete Shortcut</string>
           </property>

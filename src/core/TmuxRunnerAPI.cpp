@@ -73,16 +73,20 @@ void TmuxRunnerAPI::executeCreateCommand(QString &program,
     } else if (program == "custom") {
         const auto customConfig = config.group("Custom");
         program = customConfig.readEntry("program");
-        QString arg = customConfig.readEntry("new_params");
-        arg.replace("%name", target);
-        arg.replace("%path", filterPath(data.value("path", "").toString()));
-        args.append(arg.split(' '));
+        QStringList arg = customConfig.readEntry("new_params", QStringList());
+        if (arg.indexOf("%name") != -1) {
+            arg.replace(arg.indexOf("%name"), target);
+        }
+        if (arg.indexOf("%path") != -1) {
+            arg.replace(arg.indexOf("%path"), filterPath(data.value("path").toString()));
+        }
+        args.append(arg);
     } else {
         args.append({"-e", "tmux", "new-session", "-s", target});
     }
     // Add path option
     if (program != "custom") {
-        args.append({"-c", filterPath(data.value("path", "").toString())});
+        args.append({"-c", filterPath(data.value("path").toString())});
     }
 
     // Remove everything after tmux and replace (workaround for custom)
