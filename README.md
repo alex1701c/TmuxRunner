@@ -23,16 +23,16 @@ You can also combine this with the terminal flags as explained above.
 Required Dependencies
 ----------------------
 Debian/Ubuntu:  
-`sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext libkf5notifications-dev wmctrl tmux`
+`sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext libkf5notifications-dev libkf5kcmutils-dev wmctrl tmux`
 
 openSUSE:  
-`sudo zypper install cmake extra-cmake-modules libQt5Widgets5 libQt5Core5 libqt5-qtlocation-devel ki18n-devel ktextwidgets-devel kconfigwidgets-devel kservice-devel krunner-devel gettext-tools knotifications-devel tmux wmctrl`  
+`sudo zypper install cmake extra-cmake-modules libQt5Widgets5 libQt5Core5 libqt5-qtlocation-devel ki18n-devel ktextwidgets-devel kconfigwidgets-devel kservice-devel krunner-devel gettext-tools knotifications-devel kcmutils-devel tmux wmctrl`  
 
 Fedora:  
-`sudo dnf install cmake extra-cmake-modules kf5-ki18n-devel kf5-kservice-devel kf5-krunner-devel kf5-ktextwidgets-devel gettext kf5-knotifications-devel tmux wmctrl`  
+`sudo dnf install cmake extra-cmake-modules kf5-ki18n-devel kf5-kservice-devel kf5-krunner-devel kf5-ktextwidgets-devel gettext kf5-knotifications-devel kf5-kcmutils-devel tmux wmctrl`  
 
 Archlinux(Manjaro):  
-`sudo pacman -S cmake extra-cmake-modules knotifications tmux wmctrl` 
+`sudo pacman -S cmake extra-cmake-modules knotifications kcmutils tmux wmctrl` 
     
 ### Build instructions
 
@@ -50,14 +50,14 @@ cd TmuxRunner
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j$(nproc)
 sudo make install
 # Optional for yakuake support
 sudo curl https://raw.githubusercontent.com/aplatanado/yakuake-session/master/yakuake-session -o /usr/bin/yakuake-session
 sudo chmod +x /usr/bin/yakuake-session
 ```
 
-Restart krunner to load the runner (in a terminal type: kquitapp5 krunner;kstart5 krunner )
+Restart KRunner to load the runner (in a terminal type: kquitapp5 krunner;kstart5 krunner )
 
 ### Screenshots
 
