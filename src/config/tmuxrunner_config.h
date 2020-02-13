@@ -4,6 +4,8 @@
 #include "ui_tmuxrunner_config.h"
 #include <KCModule>
 #include <KConfigCore/KConfigGroup>
+#include <KWidgetsAddons/KMessageWidget>
+#include <QtCore/QTimer>
 
 class TmuxRunnerConfigForm : public QWidget, public Ui::TmuxRunnerConfigUi {
 Q_OBJECT
@@ -36,11 +38,13 @@ public Q_SLOTS:
 
     void shortcutInsertion();
 
-    QPair<bool, QStringList> splitArguments(const QString &arg);
+    bool splitArguments(const QString &arg);
+
+    void validateCustomArguments();
 
 private:
     TmuxRunnerConfigForm *m_ui;
-
+    KMessageWidget *errorMessageWidget = nullptr;
 };
 
 #endif

@@ -70,11 +70,11 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     QString term = context.query();
     if (!context.isValid() || !term.startsWith(triggerWord)) return;
     term.remove(triggerWordRegex);
-    QList <Plasma::QueryMatch> matches;
+    QList<Plasma::QueryMatch> matches;
     bool exactMatch = false;
     bool tmuxinator = false;
 
-    QMap <QString, QVariant> data;
+    QMap<QString, QVariant> data;
     QString program = defaultProgram;
     QStringList attached;
 
@@ -98,26 +98,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
 
     // New session
     if (!exactMatch && (matches.isEmpty() || enableNewSessionByPartlyMatch)) {
-        // Name and optional path, Online tester : https://regex101.com/r/FdZcIZ/1
-        QRegExp regex(R"(^([\w-]+)(?: +(.+)?)?$)");
-        regex.indexIn(term);
-        QStringList texts = regex.capturedTexts();
-        float relevance = matches.empty() ? 1 : 0;
-        data.insert("action", "new");
-        data.insert("target", texts.at(1));
-
-        // No path
-        if (texts.at(2).isEmpty()) {
-            if (!texts.at(1).isEmpty() || !tmuxinator) {
-                matches.append(createMatch("New session " + texts.at(1) + openIn, data, relevance));
-            }
-            // With path
-        } else {
-            data.insert("path", texts.at(2));
-            matches.append(
-                    createMatch("New session " + texts.at(1) + " in " + texts.at(2) + openIn, data, relevance)
-            );
-        }
+        context.addMatches(addTmuxNewSessionMatches(term, openIn, program, tmuxinator));
     }
 
     context.addMatches(matches);
@@ -150,7 +131,7 @@ Plasma::QueryMatch TmuxRunner::createMatch(const QString &text, const QMap<QStri
 QList<Plasma::QueryMatch>
 TmuxRunner::addTmuxinatorMatches(QString &term, const QString &openIn, const QString &program,
                                  QStringList &attached) {
-    QList <Plasma::QueryMatch> matches;
+    QList<Plasma::QueryMatch> matches;
     const QRegularExpressionMatch tmuxinatorMatch = tmuxinatorQueryRegex.match(term);
     term.remove(tmuxinatorClearRegex);
     const QString filter = tmuxinatorMatch.captured(1);
@@ -203,9 +184,31 @@ TmuxRunner::addTmuxAttachMatches(QString &term, const QString &openIn, const QSt
 }
 
 QList<Plasma::QueryMatch>
-TmuxRunner::addTmuxNewSessionMatches(QString &term, const QString &openIn, const QString &program,
-                                     QStringList &attached, bool *exactMatch) {
-    return QList<Plasma::QueryMatch>();
+TmuxRunner::addTmuxNewSessionMatches(QString &term, const QString &openIn, const QString &program, bool tmuxinator) {
+    QList<Plasma::QueryMatch> matches;
+    // Name and optional path, Online tester : https://regex101.com/r/FdZcIZ/1
+    QRegularExpression regex(R"(^([\w-]+)(?: +(.+)?)?$)");
+    const auto matchResult = regex.match(term);
+
+    // No path
+    if (matchResult.captured(2).isEmpty()) {
+        if (!matchResult.captured(1).isEmpty() || !tmuxinator) {
+            matches.append(createMatch("New session " + matchResult.captured(1) + openIn,
+                                       {{"program", program},
+                                        {"action",  "new"},
+                                        {"target",  matchResult.captured(1)}}, 0));
+        }
+        // With path
+    } else {
+        matches.append(
+                createMatch("New session " + matchResult.captured(1) + " in " + matchResult.captured(2) + openIn,
+                            {{"program", program},
+                             {"action",  "new"},
+                             {"path",    matchResult.captured(2)},
+                             {"target",  matchResult.captured(1)}}, 0)
+        );
+    }
+    return matches;
 }
 
 K_EXPORT_PLASMA_RUNNER(tmuxrunner, TmuxRunner)

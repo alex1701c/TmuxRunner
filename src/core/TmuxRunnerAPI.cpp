@@ -45,6 +45,7 @@ void TmuxRunnerAPI::executeAttatchCommand(QString &program, const QString &targe
     } else if (program == "st") {
         args.append({"tmux", "attach-session", "-t", target});
     } else if (program == "custom") {
+        // TODO Use KShell argument splitting
         const auto customConfig = config.group("Custom");
         program = customConfig.readEntry("program");
         QString arg = customConfig.readEntry("attach_params");
@@ -71,16 +72,12 @@ void TmuxRunnerAPI::executeCreateCommand(QString &program,
         if (data.value("action") != "tmuxinator") args.append({"tmux", "new-session", "-s", target});
         else args.append({"tmuxinator", target});
     } else if (program == "custom") {
+        // TODO Use KShell argument splitting
         const auto customConfig = config.group("Custom");
         program = customConfig.readEntry("program");
-        QStringList arg = customConfig.readEntry("new_params", QStringList());
-        if (arg.indexOf("%name") != -1) {
-            arg.replace(arg.indexOf("%name"), target);
-        }
-        if (arg.indexOf("%path") != -1) {
-            arg.replace(arg.indexOf("%path"), filterPath(data.value("path").toString()));
-        }
-        args.append(arg);
+        QString arg = customConfig.readEntry("new_params");
+        arg.replace("%name", target);
+        args.append(arg.split(' '));
     } else {
         args.append({"-e", "tmux", "new-session", "-s", target});
     }

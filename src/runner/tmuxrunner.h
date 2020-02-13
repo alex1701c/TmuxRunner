@@ -52,7 +52,7 @@ public:
                                                    QStringList &attached, bool *exactMatch);
 
     QList<Plasma::QueryMatch> addTmuxNewSessionMatches(QString &term, const QString &openIn, const QString &program,
-                                                   QStringList &attached, bool *exactMatch);
+                                                       bool tmuxinator);
 
     QList<Plasma::QueryMatch> addTmuxinatorMatches(QString &term, const QString &openIn, const QString &program,
                                                    QStringList &attached);

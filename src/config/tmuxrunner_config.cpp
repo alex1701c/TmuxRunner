@@ -31,13 +31,11 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
             m_ui->shortcutList->addItem(key + " ==> " + shortcutConfig.readEntry(key));
         }
     }
-    // TODO use KSplitArgs
     m_ui->flags->setChecked(config.readEntry("enable_flags", true));
     m_ui->tmuxinatorEnable->setChecked(config.readEntry("enable_tmuxinator", true));
     m_ui->attachSessionProgram->setText(customTerminalConfig.readEntry("program"));
     m_ui->attachSessionParameters->setText(customTerminalConfig.readEntry("attach_params"));
     m_ui->createSessionParameters->setText(customTerminalConfig.readEntry("new_params"));
-
 
     const auto program = config.readEntry("program", "konsole");
     if (program == "konsole") m_ui->optionKonsole->setChecked(true);
@@ -84,6 +82,8 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     connect(m_ui->shortcutKey, &QLineEdit::textChanged, this, &TmuxRunnerConfig::shortcutInsertion);
     connect(m_ui->shortcutPath, &QLineEdit::textChanged, this, &TmuxRunnerConfig::shortcutInsertion);
     connect(m_ui->shortcutList, &QListWidget::currentTextChanged, this, &TmuxRunnerConfig::shortcutInsertion);
+
+    validateCustomArguments();
 }
 
 
@@ -108,15 +108,25 @@ void TmuxRunnerConfig::save() {
     else if (m_ui->optionSimpleTerminal->isChecked()) program = "st";
     else if (m_ui->optionCustom->isChecked() && m_ui->optionCustom->isEnabled()) program = "custom";
     else program = "konsole";
-    config.writeEntry("program", program);
 
     config.writeEntry("add_new_by_part_match", m_ui->partlyMatchesOption->isChecked());
     config.writeEntry("enable_flags", m_ui->flags->isChecked());
     config.writeEntry("enable_tmuxinator", m_ui->tmuxinatorEnable->isChecked());
 
     customTerminalConfig.writeEntry("program", m_ui->attachSessionProgram->text());
+    // Attatch parameters
+    const auto attatchValid = splitArguments(m_ui->attachSessionParameters->text());
     customTerminalConfig.writeEntry("attach_params", m_ui->attachSessionParameters->text());
+    if (!attatchValid) {
+        program = "konsole";
+    }
+
+    // New parameters
+    const auto newValid = splitArguments(m_ui->attachSessionParameters->text());
     customTerminalConfig.writeEntry("new_params", m_ui->createSessionParameters->text());
+    if (!newValid) {
+        program = "konsole";
+    }
 
     for (const auto &key:shortcutConfig.keyList()) {
         shortcutConfig.deleteEntry(key);
@@ -125,12 +135,19 @@ void TmuxRunnerConfig::save() {
         const auto split = m_ui->shortcutList->item(i)->text().split(" ==> ");
         shortcutConfig.writeEntry(split.first(), split.last());
     }
+
+    // Program gets changed if the custom parameters are invalid
+    config.writeEntry("program", program);
+
+    customTerminalConfig.config()->sync();
+    config.config()->sync();
 }
 
 void TmuxRunnerConfig::customOptionInsertion() {
     m_ui->optionCustom->setEnabled(!m_ui->createSessionParameters->text().isEmpty() &&
                                    !m_ui->attachSessionProgram->text().isEmpty() &&
                                    !m_ui->attachSessionParameters->text().isEmpty());
+    validateCustomArguments();
 }
 
 void TmuxRunnerConfig::shortcutInsertion() {
@@ -151,16 +168,37 @@ void TmuxRunnerConfig::deleteShortcut() {
     m_ui->shortcutList->model()->removeRow(m_ui->shortcutList->currentRow());
 }
 
-QPair<bool, QStringList> TmuxRunnerConfig::splitArguments(const QString &arg) {
+bool TmuxRunnerConfig::splitArguments(const QString &arg) {
     KShell::Errors splitArgsError;
-    QStringList arguments = KShell::splitArgs(arg, KShell::AbortOnMeta, &splitArgsError);
+    KShell::splitArgs(arg, KShell::AbortOnMeta, &splitArgsError);
+    return splitArgsError == KShell::Errors::NoError;
 
-    // If the arguments could not be split, abort
-    if (splitArgsError != KShell::Errors::NoError) {
-        return {false, QStringList()};
+}
+
+void TmuxRunnerConfig::validateCustomArguments() {
+    QString errorMessage;
+    if (!splitArguments(m_ui->attachSessionParameters->text())) {
+        errorMessage.append("The attach session parameters are not valid!\n");
     }
-
-    return {true, arguments};
+    if (!splitArguments(m_ui->createSessionParameters->text())) {
+        errorMessage.append("The create session parameters are not valid!\n");
+    }
+    if (!errorMessage.isEmpty()) {
+        errorMessage.prepend("Please make sure that quotes/escaped characters correct!\n");
+        errorMessage.prepend("Error when parsing arguments for custom option\n");
+        if (errorMessageWidget) {
+            errorMessageWidget->setText(errorMessage);
+            errorMessageWidget->show();
+        } else {
+            errorMessageWidget = new KMessageWidget(errorMessage, this);
+            errorMessageWidget->setMessageType(KMessageWidget::Error);
+            m_ui->errorMessagesLayout->addWidget(errorMessageWidget);
+        }
+    } else {
+        if (errorMessageWidget) {
+            errorMessageWidget->hide();
+        }
+    }
 }
 
 
