@@ -9,6 +9,10 @@ Shortcuts can be created/deleted in the config dialog.
 
 Furthermore you can change the terminal you want tmux to be launched in.
 The default options are: Konsole, Yakuake, Terminator and Simple Terminal. You can also define a custom terminal.
+In case you want to use one terminal emulator for the mist time and another sometimes you can set one 
+as default and select the other for the action (like instance Yakuake in the config screenshot).
+Now you can switch between these two the terminals just by Enter(default) or Shift+Enter(action).
+
 If you want to change the terminal for just one command you can add a flag to the end of the statement. 
 The flags start with a *-* and is followed by the lowercase start letter if the option. 
 For example *-y* opens it in Yakuake and *-c* opens it with your custom terminal.
@@ -61,7 +65,7 @@ Restart KRunner to load the runner (in a terminal type: kquitapp5 krunner;kstart
 
 ### Screenshots
 
-#### Simple command
+#### Simple command and Yakuake as action
 ![Simple command](https://raw.githubusercontent.com/alex1701c/Screenshots/master/TmuxRunner/overviewtmux.png)
 
 #### Search sessions
