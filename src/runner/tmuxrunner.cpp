@@ -4,6 +4,7 @@
 #include <KLocalizedString>
 #include <QtGui/QtGui>
 #include <QtCore>
+#include <QAction>
 #include <KSharedConfig>
 
 
@@ -52,6 +53,27 @@ void TmuxRunner::reloadPluginConfiguration(const QString &path) {
     enableFlags = config.readEntry("enable_flags", true);
     enableNewSessionByPartlyMatch = config.readEntry("add_new_by_part_match", false);
     defaultProgram = config.readEntry("program", "konsole");
+    const QString actionChoiceText = config.readEntry("action_program", "None");
+    const QString actionChoice = actionChoiceText.toLower();
+    if(actionChoice == QLatin1String("none")){
+        qDeleteAll(actionList);
+        actionList.clear();
+    } else {
+        QIcon actionIcon = QIcon::fromTheme("utilities-terminal");
+        if (actionChoice == QLatin1String("yakuake")) {
+            actionProgram = "yakuake-session";
+            actionIcon = QIcon::fromTheme("yakuake", actionIcon);
+        }
+        else if (actionChoice == QLatin1String("Simple Terminal (st)")) {
+            actionProgram = "st";
+        }else{
+            // Konsole or custom can be youst uses because they are lowercase
+            actionProgram = actionChoice;
+        }
+
+        qDeleteAll(actionList);
+        actionList = {addAction("action", actionIcon, "Open session in " + actionChoiceText)};
+    }
 
     // If the file gets edited with a text editor, it often gets replaced by the edited version
     // https://stackoverflow.com/a/30076119/9342842
@@ -104,11 +126,21 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     context.addMatches(matches);
 }
 
+QList<QAction *> TmuxRunner::actionsForMatch(const Plasma::QueryMatch &match) {
+    Q_UNUSED(match)
+
+    return actionList;
+}
+
+
 void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
     Q_UNUSED(context)
 
-    const QMap<QString, QVariant> data = match.data().toMap();
+    QMap<QString, QVariant> data = match.data().toMap();
     QString program = data.value("program", defaultProgram).toString();
+    if (match.selectedAction()) {
+        program = actionProgram;
+    }
     const QString target = data.value("target").toString();
 
     if (data.value("action") == "attach") {
@@ -117,7 +149,6 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
         api->executeCreateCommand(program, target, data);
     }
 }
-
 
 Plasma::QueryMatch TmuxRunner::createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance) {
     Plasma::QueryMatch match(this);

@@ -50,6 +50,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
             !m_ui->attachSessionProgram->text().isEmpty() &&
             !m_ui->attachSessionParameters->text().isEmpty()
     );
+   m_ui->actionComboBox->setCurrentText(config.readEntry("action_program", "None"));
 
 #if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
     const auto changedSlotPointer = &TmuxRunnerConfig::markAsChanged;
@@ -61,6 +62,8 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     connect(m_ui->flags, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->tmuxinatorEnable, &QCheckBox::clicked, this, changedSlotPointer);
     // Terminals
+    connect(m_ui->actionComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+        this, changedSlotPointer);
     connect(m_ui->optionKonsole, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->optionYakuake, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->optionTerminator, &QCheckBox::clicked, this, changedSlotPointer);
@@ -92,6 +95,7 @@ void TmuxRunnerConfig::defaults() {
     m_ui->partlyMatchesOption->setChecked(false);
     m_ui->optionKonsole->setChecked(true);
     m_ui->tmuxinatorEnable->setChecked(true);
+    m_ui->actionComboBox->setCurrentIndex(0);
 
 #if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
     emit markAsChanged();
@@ -112,6 +116,7 @@ void TmuxRunnerConfig::save() {
     config.writeEntry("add_new_by_part_match", m_ui->partlyMatchesOption->isChecked());
     config.writeEntry("enable_flags", m_ui->flags->isChecked());
     config.writeEntry("enable_tmuxinator", m_ui->tmuxinatorEnable->isChecked());
+    config.writeEntry("action_program", m_ui->actionComboBox->currentText());
 
     customTerminalConfig.writeEntry("program", m_ui->attachSessionProgram->text());
     // Attatch parameters
@@ -144,9 +149,15 @@ void TmuxRunnerConfig::save() {
 }
 
 void TmuxRunnerConfig::customOptionInsertion() {
-    m_ui->optionCustom->setEnabled(!m_ui->createSessionParameters->text().isEmpty() &&
-                                   !m_ui->attachSessionProgram->text().isEmpty() &&
-                                   !m_ui->attachSessionParameters->text().isEmpty());
+    const bool textsNotEmpty = !m_ui->createSessionParameters->text().isEmpty() &&
+        !m_ui->attachSessionProgram->text().isEmpty() &&
+        !m_ui->attachSessionParameters->text().isEmpty();
+    m_ui->optionCustom->setEnabled(textsNotEmpty);
+    if (textsNotEmpty && m_ui->actionComboBox->count() < 6){
+        m_ui->actionComboBox->addItem("Custom");
+    }else if (m_ui->actionComboBox->count() == 6){
+        m_ui->actionComboBox->removeItem(5);
+    }
     validateCustomArguments();
 }
 

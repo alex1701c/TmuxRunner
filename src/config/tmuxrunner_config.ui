@@ -35,7 +35,7 @@
         <x>0</x>
         <y>0</y>
         <width>636</width>
-        <height>660</height>
+        <height>700</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -83,6 +83,51 @@
              <string>Enable tmuxinator interaction</string>
             </property>
            </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Show launch option as action</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="actionComboBox">
+              <item>
+               <property name="text">
+                <string>None</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Konsole</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Yakuake</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Terminator</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Simple Terminal (st)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Custom</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
            <widget class="QGroupBox" name="groupBox">
