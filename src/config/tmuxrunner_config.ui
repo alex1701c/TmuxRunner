@@ -64,13 +64,6 @@
            <layout class="QVBoxLayout" name="errorMessagesLayout"/>
           </item>
           <item>
-           <widget class="QCheckBox" name="partlyMatchesOption">
-            <property name="text">
-             <string>Show create options for partly matches</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QCheckBox" name="flags">
             <property name="text">
              <string>Use flags to use different terminal</string>

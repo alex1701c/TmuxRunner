@@ -19,7 +19,7 @@ public:
     QList<QString> tmuxinatorConfigs;
     KConfigGroup config;
 
-    bool enableTmuxinator, enableFlags, enableNewSessionByPartlyMatch;
+    bool enableTmuxinator, enableFlags;
     // Default program used for launching sessions, can be overwritten using flags
     QString defaultProgram;
     QString actionProgram;

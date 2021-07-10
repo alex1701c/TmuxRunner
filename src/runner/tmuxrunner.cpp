@@ -51,7 +51,6 @@ void TmuxRunner::reloadPluginConfiguration(const QString &path) {
     if (!path.isEmpty()) config.config()->reparseConfiguration();
     enableTmuxinator = config.readEntry("enable_tmuxinator", true);
     enableFlags = config.readEntry("enable_flags", true);
-    enableNewSessionByPartlyMatch = config.readEntry("add_new_by_part_match", false);
     defaultProgram = config.readEntry("program", "konsole");
     const QString actionChoiceText = config.readEntry("action_program", "None");
     const QString actionChoice = actionChoiceText.toLower();
@@ -118,7 +117,7 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     context.addMatches(addTmuxAttachMatches(term, openIn, program, attached, &exactMatch));
 
     // New session
-    if (!exactMatch && (matches.isEmpty() || enableNewSessionByPartlyMatch)) {
+    if (!exactMatch) {
         context.addMatches(addTmuxNewSessionMatches(term, openIn, program, tmuxinator));
     }
 

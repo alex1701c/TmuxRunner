@@ -42,7 +42,6 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     else if (program == "st") m_ui->optionSimpleTerminal->setChecked(true);
     else if (program == "custom") m_ui->optionCustom->setChecked(true);
 
-    m_ui->partlyMatchesOption->setChecked(config.readEntry("add_new_by_part_match", false));
     m_ui->optionCustom->setEnabled(
             !m_ui->createSessionParameters->text().isEmpty() &&
             !m_ui->attachSessionProgram->text().isEmpty() &&
@@ -52,7 +51,6 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
 
     const auto changedSlotPointer = &TmuxRunnerConfig::markAsChanged;
 
-    connect(m_ui->partlyMatchesOption, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->flags, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->tmuxinatorEnable, &QCheckBox::clicked, this, changedSlotPointer);
     // Terminals
@@ -86,7 +84,6 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
 
 void TmuxRunnerConfig::defaults() {
     m_ui->flags->setChecked(true);
-    m_ui->partlyMatchesOption->setChecked(false);
     m_ui->optionKonsole->setChecked(true);
     m_ui->tmuxinatorEnable->setChecked(true);
     m_ui->actionComboBox->setCurrentIndex(0);
@@ -103,7 +100,6 @@ void TmuxRunnerConfig::save() {
     else if (m_ui->optionCustom->isChecked() && m_ui->optionCustom->isEnabled()) program = "custom";
     else program = "konsole";
 
-    config.writeEntry("add_new_by_part_match", m_ui->partlyMatchesOption->isChecked());
     config.writeEntry("enable_flags", m_ui->flags->isChecked());
     config.writeEntry("enable_tmuxinator", m_ui->tmuxinatorEnable->isChecked());
     config.writeEntry("action_program", m_ui->actionComboBox->currentText());
