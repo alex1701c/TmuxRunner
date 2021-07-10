@@ -96,7 +96,6 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     bool exactMatch = false;
     bool tmuxinator = false;
 
-    QMap<QString, QVariant> data;
     QString program = defaultProgram;
     QStringList attached;
 
@@ -198,7 +197,7 @@ TmuxRunner::addTmuxAttachMatches(QString &term, const QString &openIn, const QSt
                                  QStringList &attached, bool *exactMatch) {
     QList<Plasma::QueryMatch> matches;
     const auto queryName = term.contains(' ') ? term.split(' ').first() : term;
-    for (const auto &session:tmuxSessions) {
+    for (const auto &session: qAsConst(tmuxSessions)) {
         if (session.startsWith(queryName)) {
             if (session == queryName) *exactMatch = true;
             if (attached.contains(session)) continue;

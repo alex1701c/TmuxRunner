@@ -7,8 +7,6 @@
 #include <QtCore/QDir>
 #include <KShell>
 
-#include "kcmutils_version.h"
-
 K_PLUGIN_FACTORY(TmuxRunnerConfigFactory, registerPlugin<TmuxRunnerConfig>("kcm_krunner_tmuxrunner");)
 
 TmuxRunnerConfigForm::TmuxRunnerConfigForm(QWidget *parent) : QWidget(parent) {
@@ -52,11 +50,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     );
    m_ui->actionComboBox->setCurrentText(config.readEntry("action_program", "None"));
 
-#if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
     const auto changedSlotPointer = &TmuxRunnerConfig::markAsChanged;
-#else
-    const auto changedSlotPointer = static_cast<void (TmuxRunnerConfig::*)()>(&TmuxRunnerConfig::changed);
-#endif
 
     connect(m_ui->partlyMatchesOption, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->flags, &QCheckBox::clicked, this, changedSlotPointer);
@@ -97,11 +91,7 @@ void TmuxRunnerConfig::defaults() {
     m_ui->tmuxinatorEnable->setChecked(true);
     m_ui->actionComboBox->setCurrentIndex(0);
 
-#if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
-    emit markAsChanged();
-#else
-    emit changed(true);
-#endif
+    markAsChanged();
 }
 
 void TmuxRunnerConfig::save() {

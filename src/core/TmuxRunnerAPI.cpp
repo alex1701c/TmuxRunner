@@ -13,7 +13,8 @@ QString TmuxRunnerAPI::filterPath(QString path) {
         return QDir::homePath();
     }
     const auto shortcutConfig = config.group("Shortcuts");
-    for (const auto &key:shortcutConfig.keyList()) {
+    const auto keyList = shortcutConfig.keyList();
+    for (const auto &key: keyList) {
         path.replace(key, shortcutConfig.readEntry(key));
     }
     if (path.startsWith('~')) {
@@ -130,7 +131,7 @@ void TmuxRunnerAPI::executeCreateCommand(QString &program,
 QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs() {
     QStringList tmuxinatorConfigs;
     QProcess isTmuxinatorInstalledProcess;
-    isTmuxinatorInstalledProcess.start("whereis", QStringList() << "-b" << "tmuxinator");
+    isTmuxinatorInstalledProcess.start("whereis", QStringList{"-b", "tmuxinator"});
     isTmuxinatorInstalledProcess.waitForFinished();
     if (QString(isTmuxinatorInstalledProcess.readAll()) == "tmuxinator:\n") {
         // Disable tmuxinator until the user installs and enables it
@@ -139,7 +140,7 @@ QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs() {
     }
     // Fetch the available configurations
     QProcess process;
-    process.start("tmuxinator ls");
+    process.start("tmuxinator", QStringList{"ls"});
     process.waitForFinished(2000);
     const QString res = process.readAll();
     if (res.split('\n').size() == 2) {
