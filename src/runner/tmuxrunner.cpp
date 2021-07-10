@@ -242,7 +242,7 @@ TmuxRunner::addTmuxNewSessionMatches(QString &term, const QString &openIn, const
     return matches;
 }
 
-K_EXPORT_PLASMA_RUNNER(tmuxrunner, TmuxRunner)
+K_EXPORT_PLASMA_RUNNER_WITH_JSON(TmuxRunner, "tmuxrunner.json")
 
 // needed for the QObject subclass declared as part of K_EXPORT_PLASMA_RUNNER
 #include "tmuxrunner.moc"

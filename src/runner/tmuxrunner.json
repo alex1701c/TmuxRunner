@@ -1,0 +1,17 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "alex1701c.dev@gmx.de",
+                "Name": "Alexander Lohnau"
+            }
+        ],
+        "Description": "TmuxRunner runner",
+        "EnabledByDefault": true,
+        "Icon": "utilities-terminal",
+        "Id": "tmuxrunner",
+        "License": "LGPL 2.1+",
+        "Name": "TmuxRunner",
+        "Version": "0.1"
+    }
+}

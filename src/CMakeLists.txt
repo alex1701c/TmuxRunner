@@ -2,7 +2,7 @@ add_definitions(-DTRANSLATION_DOMAIN=\"plasma_runner_org.kde.tmuxrunner\")
 
 set(tmuxrunner_SRCS runner/tmuxrunner.cpp core/TmuxRunnerAPI.cpp)
 
-add_library(krunner_tmuxrunner MODULE ${tmuxrunner_SRCS})
+kcoreaddons_add_plugin(krunner_tmuxrunner SOURCES ${tmuxrunner_SRCS} INSTALL_NAMESPACE "kf5/krunner")
 target_link_libraries(krunner_tmuxrunner KF5::Runner KF5::I18n KF5::Notifications)
 
 set(kcm_krunner_tmuxrunner_SRCS config/tmuxrunner_config.cpp core/TmuxRunnerAPI.cpp core/TmuxRunnerAPI.h)
@@ -22,5 +22,5 @@ target_link_libraries(kcm_krunner_tmuxrunner
 
 add_dependencies(krunner_tmuxrunner kcm_krunner_tmuxrunner)
 
-install(TARGETS krunner_tmuxrunner kcm_krunner_tmuxrunner DESTINATION ${KDE_INSTALL_QTPLUGINDIR})
-install(FILES runner/plasma-runner-tmuxrunner.desktop config/plasma-runner-tmuxrunner_config.desktop DESTINATION ${KDE_INSTALL_KSERVICES5DIR})
+install(TARGETS kcm_krunner_tmuxrunner DESTINATION ${KDE_INSTALL_QTPLUGINDIR})
+install(FILES config/plasma-runner-tmuxrunner_config.desktop DESTINATION ${KDE_INSTALL_KSERVICES5DIR})
