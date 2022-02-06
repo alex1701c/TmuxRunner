@@ -216,7 +216,7 @@ QList<Plasma::QueryMatch>
 TmuxRunner::addTmuxNewSessionMatches(QString &term, const QString &openIn, const QString &program, bool tmuxinator) {
     QList<Plasma::QueryMatch> matches;
     // Name and optional path, Online tester : https://regex101.com/r/FdZcIZ/1
-    QRegularExpression regex(R"(^([\w-]+)(?: +(.+)?)?$)");
+    const static QRegularExpression regex(R"(^([\w-]+)(?: +(.+)?)?$)");
     const auto matchResult = regex.match(term);
 
     // No path
