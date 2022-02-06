@@ -155,7 +155,10 @@ QList<Plasma::QueryMatch>
 TmuxRunner::addTmuxinatorMatches(QString &term, const QString &openIn, const QString &program,
                                  QStringList &attached) {
     QList<Plasma::QueryMatch> matches;
+    const static QRegularExpression tmuxinatorQueryRegex = QRegularExpression(R"(inator(?: (\w+) *(.+)?)?)");
     const QRegularExpressionMatch tmuxinatorMatch = tmuxinatorQueryRegex.match(term);
+
+    const static QRegularExpression tmuxinatorClearRegex = QRegularExpression("^inator *");
     term.remove(tmuxinatorClearRegex);
     const QString filter = tmuxinatorMatch.captured(1);
     for (const auto &tmuxinatorConfig: qAsConst(tmuxinatorConfigs)) {

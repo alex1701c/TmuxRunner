@@ -30,8 +30,6 @@ public:
     const QRegularExpression triggerWordRegex = QRegularExpression("tmux *");
     const QIcon icon = QIcon::fromTheme("utilities-terminal");
     const QLatin1String tmuxinatorQuery = QLatin1String("inator");
-    const QRegularExpression tmuxinatorQueryRegex = QRegularExpression(R"(inator(?: (\w+) *(.+)?)?)");
-    const QRegularExpression tmuxinatorClearRegex = QRegularExpression("^inator *");
 
     std::unique_ptr<TmuxRunnerAPI> api;
 
