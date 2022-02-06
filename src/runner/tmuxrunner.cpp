@@ -71,7 +71,7 @@ void TmuxRunner::reloadPluginConfiguration(const QString &path) {
         }
 
         qDeleteAll(actionList);
-        actionList = {addAction("action", actionIcon, "Open session in " + actionChoiceText)};
+        actionList = {new QAction(actionIcon, "Open session in " + actionChoiceText, this)};
     }
 
     // If the file gets edited with a text editor, it often gets replaced by the edited version
