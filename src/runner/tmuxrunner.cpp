@@ -13,9 +13,6 @@ TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVari
     setObjectName(QStringLiteral("TmuxRunner"));
 }
 
-TmuxRunner::~TmuxRunner() = default;
-
-
 void TmuxRunner::init() {
     const QString configFolder = QDir::homePath() + "/.config/krunnerplugins/";
     const QDir configDir(configFolder);

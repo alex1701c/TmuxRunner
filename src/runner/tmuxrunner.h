@@ -12,8 +12,6 @@ Q_OBJECT
 public:
     TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
 
-    ~TmuxRunner() override;
-
     QFileSystemWatcher watcher;
     QList<QString> tmuxSessions;
     QList<QString> tmuxinatorConfigs;
