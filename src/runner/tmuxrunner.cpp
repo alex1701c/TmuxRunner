@@ -124,13 +124,6 @@ void TmuxRunner::match(Plasma::RunnerContext &context) {
     context.addMatches(matches);
 }
 
-QList<QAction *> TmuxRunner::actionsForMatch(const Plasma::QueryMatch &match) {
-    Q_UNUSED(match)
-
-    return actionList;
-}
-
-
 void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
     Q_UNUSED(context)
 
@@ -154,6 +147,7 @@ Plasma::QueryMatch TmuxRunner::createMatch(const QString &text, const QMap<QStri
     match.setText(text);
     match.setData(data);
     match.setRelevance(relevance);
+    match.setActions(actionList);
     return match;
 }
 

@@ -42,7 +42,6 @@ protected Q_SLOTS:
 
 public:
     void match(Plasma::RunnerContext &context) override;
-    QList<QAction*> actionsForMatch(const Plasma::QueryMatch &match) override;
     void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
 
     Plasma::QueryMatch createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance);
