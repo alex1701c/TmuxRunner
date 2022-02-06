@@ -34,7 +34,7 @@ void TmuxRunner::init() {
     config = KSharedConfig::openConfig(QDir::homePath() + QStringLiteral("/.config/krunnerplugins/tmuxrunnerrc"))
             ->group("Config");
 
-    api = new TmuxRunnerAPI(config);
+    api.reset(new TmuxRunnerAPI(config));
 
     reloadPluginConfiguration();
 }

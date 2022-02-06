@@ -33,7 +33,7 @@ public:
     const QRegularExpression tmuxinatorQueryRegex = QRegularExpression(R"(inator(?: (\w+) *(.+)?)?)");
     const QRegularExpression tmuxinatorClearRegex = QRegularExpression("^inator *");
 
-    TmuxRunnerAPI *api;
+    std::unique_ptr<TmuxRunnerAPI> api;
 
 protected Q_SLOTS:
     void init() override;
