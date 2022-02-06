@@ -8,8 +8,8 @@
 #include <KSharedConfig>
 
 
-TmuxRunner::TmuxRunner(QObject *parent, const QVariantList &args)
-        : Plasma::AbstractRunner(parent, args) {
+TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
+        : Plasma::AbstractRunner(parent, data, args) {
     setObjectName(QStringLiteral("TmuxRunner"));
 }
 

@@ -10,7 +10,7 @@ class TmuxRunner : public Plasma::AbstractRunner {
 Q_OBJECT
 
 public:
-    TmuxRunner(QObject *parent, const QVariantList &args);
+    TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
 
     ~TmuxRunner() override;
 
