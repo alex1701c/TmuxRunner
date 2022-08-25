@@ -34,7 +34,6 @@ public:
 protected Q_SLOTS:
     void init() override;
     void reloadPluginConfiguration(const QString &path = QString());
-    void prepareForMatchSession();
 
 public:
     void match(Plasma::RunnerContext &context) override;

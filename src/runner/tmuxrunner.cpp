@@ -26,7 +26,9 @@ void TmuxRunner::init() {
     // Add file watcher for config
     watcher.addPath(configFolder + "tmuxrunnerrc");
     connect(&watcher, &QFileSystemWatcher::fileChanged, this, &TmuxRunner::reloadPluginConfiguration);
-    connect(this, &TmuxRunner::prepare, this, &TmuxRunner::prepareForMatchSession);
+    connect(this, &TmuxRunner::prepare, this, [this]() {
+        tmuxSessions = api->fetchTmuxSessions();
+    });
 
     config = KSharedConfig::openConfig(QDir::homePath() + QStringLiteral("/.config/krunnerplugins/tmuxrunnerrc"))
             ->group("Config");
@@ -36,9 +38,6 @@ void TmuxRunner::init() {
     reloadPluginConfiguration();
 }
 
-void TmuxRunner::prepareForMatchSession() {
-    tmuxSessions = api->fetchTmuxSessions();
-}
 
 /**
  * Call method whenever the config file changes, the normal reloadConfiguration method gets called to often
