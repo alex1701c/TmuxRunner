@@ -24,16 +24,16 @@ public:
     QList<QAction *> actionList;
 
     // Reusable variables
-    const QLatin1String triggerWord = QLatin1String("tmux");
-    const QRegularExpression triggerWordRegex = QRegularExpression("tmux *");
+    const QLatin1String triggerWord{"tmux"};
+    const QRegularExpression triggerWordRegex{"tmux *"};
     const QIcon icon = QIcon::fromTheme("utilities-terminal");
-    const QLatin1String tmuxinatorQuery = QLatin1String("inator");
+    const QLatin1String tmuxinatorQuery{"inator"};
 
     std::unique_ptr<TmuxRunnerAPI> api;
 
 protected Q_SLOTS:
     void init() override;
-    void reloadPluginConfiguration(const QString &path = "");
+    void reloadPluginConfiguration(const QString &path = QString());
     void prepareForMatchSession();
 
 public:
