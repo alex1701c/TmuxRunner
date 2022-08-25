@@ -13,5 +13,6 @@
         "License": "LGPL 2.1+",
         "Name": "TmuxRunner",
         "Version": "0.1"
-    }
+    },
+    "X-KDE-ConfigModule": "kcm_krunner_tmuxrunner"
 }

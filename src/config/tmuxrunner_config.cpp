@@ -7,7 +7,7 @@
 #include <QtCore/QDir>
 #include <KShell>
 
-K_PLUGIN_FACTORY(TmuxRunnerConfigFactory, registerPlugin<TmuxRunnerConfig>();)
+K_PLUGIN_CLASS(TmuxRunnerConfig)
 
 TmuxRunnerConfigForm::TmuxRunnerConfigForm(QWidget *parent) : QWidget(parent) {
     setupUi(this);

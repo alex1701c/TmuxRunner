@@ -23,4 +23,3 @@ target_link_libraries(kcm_krunner_tmuxrunner
 add_dependencies(krunner_tmuxrunner kcm_krunner_tmuxrunner)
 
 install(TARGETS kcm_krunner_tmuxrunner DESTINATION ${KDE_INSTALL_QTPLUGINDIR})
-install(FILES config/plasma-runner-tmuxrunner_config.desktop DESTINATION ${KDE_INSTALL_KSERVICES5DIR})
