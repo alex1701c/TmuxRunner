@@ -11,9 +11,7 @@
 TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
         : Plasma::AbstractRunner(parent, data, args) {
     setObjectName(QStringLiteral("TmuxRunner"));
-}
 
-void TmuxRunner::init() {
     const QString configFolder = QDir::homePath() + "/.config/krunnerplugins/";
     const QDir configDir(configFolder);
     if (!configDir.exists()) configDir.mkpath(configFolder);
@@ -37,7 +35,6 @@ void TmuxRunner::init() {
 
     reloadPluginConfiguration();
 }
-
 
 /**
  * Call method whenever the config file changes, the normal reloadConfiguration method gets called to often

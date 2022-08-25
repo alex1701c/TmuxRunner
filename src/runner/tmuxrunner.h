@@ -32,7 +32,6 @@ public:
     std::unique_ptr<TmuxRunnerAPI> api;
 
 protected Q_SLOTS:
-    void init() override;
     void reloadPluginConfiguration(const QString &path = QString());
 
 public:
