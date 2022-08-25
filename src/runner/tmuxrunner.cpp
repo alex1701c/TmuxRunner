@@ -28,8 +28,8 @@ TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVari
         tmuxSessions = api->fetchTmuxSessions();
     });
 
-    config = KSharedConfig::openConfig(QDir::homePath() + QStringLiteral("/.config/krunnerplugins/tmuxrunnerrc"))
-            ->group("Config");
+    const QString configFilePath = QStandardPaths::locate(QStandardPaths::ConfigLocation, QStringLiteral("krunnerplugins/tmuxrunnerrc"));
+    config = KSharedConfig::openConfig(configFilePath)->group("Config");
 
     api.reset(new TmuxRunnerAPI(config));
 
