@@ -77,6 +77,11 @@ void TmuxRunner::reloadPluginConfiguration(const QString &path) {
         tmuxinatorConfigs = api->fetchTmuxinatorConfigs();
         enableTmuxinator = !tmuxinatorConfigs.isEmpty();
     }
+
+    QList<Plasma::RunnerSyntax> syntaxes;
+    syntaxes.append(Plasma::RunnerSyntax("tmux", "List available tmux sessions"));
+    syntaxes.append(Plasma::RunnerSyntax("tmux :q:", "Filter sessions or create new session for the given term"));
+    setSyntaxes(syntaxes);
 }
 
 void TmuxRunner::match(Plasma::RunnerContext &context) {
