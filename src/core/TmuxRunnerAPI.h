@@ -1,7 +1,11 @@
 #ifndef TMUXRUNNER_TMUXRUNNERAPI_H
 #define TMUXRUNNER_TMUXRUNNERAPI_H
 
-#include <QtCore>
+#include <KConfigGroup>
+#include <QRegularExpression>
+#include <QStandardPaths>
+#include <QString>
+#include <QStringList>
 
 class TmuxRunnerAPI {
 public:
@@ -23,6 +27,10 @@ public:
 
     void showErrorNotification(const QString &msg);
 
+    inline static QString configFileLocation()
+    {
+        return QStandardPaths::locate(QStandardPaths::ConfigLocation, QStringLiteral("krunnerplugins/tmuxrunnerrc"));
+    }
 
 private:
     const QLatin1Char lineSeparator = QLatin1Char(':');

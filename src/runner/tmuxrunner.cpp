@@ -12,7 +12,7 @@ TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVari
         : Plasma::AbstractRunner(parent, data, args) {
     setObjectName(QStringLiteral("TmuxRunner"));
 
-    const QString configFolder = QDir::homePath() + "/.config/krunnerplugins/";
+    const QString configFolder = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/krunnerplugins/";
     const QDir configDir(configFolder);
     if (!configDir.exists()) configDir.mkpath(configFolder);
     // Create file
@@ -28,8 +28,7 @@ TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVari
         tmuxSessions = api->fetchTmuxSessions();
     });
 
-    const QString configFilePath = QStandardPaths::locate(QStandardPaths::ConfigLocation, QStringLiteral("krunnerplugins/tmuxrunnerrc"));
-    config = KSharedConfig::openConfig(configFilePath)->group("Config");
+    config = KSharedConfig::openConfig(TmuxRunnerAPI::configFileLocation())->group("Config");
 
     api.reset(new TmuxRunnerAPI(config));
 

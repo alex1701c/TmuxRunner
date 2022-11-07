@@ -1,9 +1,11 @@
-#include <KConfigCore/KConfigGroup>
-#include <KShell>
-#include <KNotifications/KNotification>
-#include <KMacroExpander>
 #include "TmuxRunnerAPI.h"
 
+#include <KConfigGroup>
+#include <KMacroExpander>
+#include <KNotifications/KNotification>
+#include <KShell>
+#include <QProcess>
+#include <QDir>
 
 TmuxRunnerAPI::TmuxRunnerAPI(const KConfigGroup &config) : config(config) {
 }

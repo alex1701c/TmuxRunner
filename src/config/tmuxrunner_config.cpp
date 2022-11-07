@@ -7,6 +7,8 @@
 #include <QtCore/QDir>
 #include <KShell>
 
+#include "../core/TmuxRunnerAPI.h"
+
 K_PLUGIN_CLASS(TmuxRunnerConfig)
 
 TmuxRunnerConfigForm::TmuxRunnerConfigForm(QWidget *parent) : QWidget(parent) {
@@ -18,7 +20,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     auto *layout = new QGridLayout(this);
     layout->addWidget(m_ui, 0, 0);
 
-    config = KSharedConfig::openConfig(QDir::homePath() + "/.config/krunnerplugins/tmuxrunnerrc")->group("Config");
+    config = KSharedConfig::openConfig(TmuxRunnerAPI::configFileLocation())->group("Config");
     shortcutConfig = config.group("Shortcuts");
     customTerminalConfig = config.group("Custom");
 
