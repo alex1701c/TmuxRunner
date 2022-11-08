@@ -63,6 +63,17 @@ sudo chmod +x /usr/bin/yakuake-session
 
 Restart KRunner to load the runner (in a terminal type: kquitapp5 krunner;kstart5 krunner )
 
+### Configuration
+1. Search for "Plasma Search" in Krunner
+2. open system settings entry 
+3. search for "tmux" in the search field
+
+alternatively, run
+
+```bash
+kcmshell5 plasmasearch --args tmuxrunner
+```
+
 ### Screenshots
 
 #### Simple command and Yakuake as action
