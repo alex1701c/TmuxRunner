@@ -2,8 +2,8 @@
 #define TMUXRUNNER_H
 
 #include <KRunner/AbstractRunner>
-#include <QtCore>
 #include <KSharedConfig>
+#include <QFileSystemWatcher>
 #include "core/TmuxRunnerAPI.h"
 
 class TmuxRunner : public Plasma::AbstractRunner {

@@ -2,9 +2,9 @@
 
 // KF
 #include <KLocalizedString>
-#include <QtGui/QtGui>
-#include <QtCore>
 #include <QAction>
+#include <QFile>
+#include <QDir>
 #include <KSharedConfig>
 
 

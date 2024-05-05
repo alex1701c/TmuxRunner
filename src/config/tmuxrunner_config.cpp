@@ -1,10 +1,10 @@
 #include "tmuxrunner_config.h"
 #include <KSharedConfig>
 #include <KPluginFactory>
-#include <krunner/abstractrunner.h>
-#include <QtWidgets/QGridLayout>
+#include <KRunner/AbstractRunner>
+#include <QGridLayout>
 #include <QDebug>
-#include <QtCore/QDir>
+#include <QDir>
 #include <KShell>
 
 #include "../core/TmuxRunnerAPI.h"

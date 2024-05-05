@@ -3,9 +3,9 @@
 
 #include "ui_tmuxrunner_config.h"
 #include <KCModule>
-#include <KConfigCore/KConfigGroup>
-#include <KWidgetsAddons/KMessageWidget>
-#include <QtCore/QTimer>
+#include <KConfigGroup>
+#include <KMessageWidget>
+#include <QTimer>
 
 class TmuxRunnerConfigForm : public QWidget, public Ui::TmuxRunnerConfigUi {
 Q_OBJECT
