@@ -7,8 +7,12 @@
 #include <QDir>
 #include <QFile>
 
-TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
-    : KRunner::AbstractRunner(parent, data, args)
+TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &)
+#if QT_VERSION_MAJOR == 5
+    : KRunner::AbstractRunner(parent, data, QVariantList{})
+#else
+    : KRunner::AbstractRunner(parent, data)
+#endif
 {
     api.reset(new TmuxRunnerAPI(config()));
 }
@@ -23,7 +27,6 @@ void TmuxRunner::reloadConfiguration()
     const QString actionChoiceText = grp.readEntry("action_program", "None");
     const QString actionChoice = actionChoiceText.toLower();
     if (actionChoice == QLatin1String("none")) {
-        qDeleteAll(actionList);
         actionList.clear();
     } else {
         QIcon actionIcon = QIcon::fromTheme("utilities-terminal");
@@ -37,8 +40,11 @@ void TmuxRunner::reloadConfiguration()
             actionProgram = actionChoice;
         }
 
-        qDeleteAll(actionList);
+#if QT_VERSION_MAJOR == 5
         actionList = {new QAction(actionIcon, "Open session in " + actionChoiceText, this)};
+#else
+        actionList = {KRunner::Action("open-in", actionIcon.name(), "Open session in " + actionChoiceText)};
+#endif
     }
 
     if (enableTmuxinator) {

@@ -6,6 +6,10 @@
 #include <KSharedConfig>
 #include <QIcon>
 
+#if QT_VERSION_MAJOR == 6
+#include <KRunner/Action>
+#endif
+
 class TmuxRunner : public KRunner::AbstractRunner
 {
     Q_OBJECT
@@ -20,7 +24,11 @@ public:
     // Default program used for launching sessions, can be overwritten using flags
     QString defaultProgram;
     QString actionProgram;
+#if KRUNNER_VERSION_MAJOR == 5
     QList<QAction *> actionList;
+#else
+    KRunner::Actions actionList;
+#endif
 
     // Reusable variables
     const QLatin1String triggerWord{"tmux"};
