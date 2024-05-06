@@ -17,6 +17,12 @@ class TmuxRunner : public KRunner::AbstractRunner
 public:
     TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
 
+    // KRunner API
+    void match(KRunner::RunnerContext &context) override;
+    void reloadConfiguration() override;
+    void run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match) override;
+
+private:
     QList<QString> tmuxSessions;
     QList<QString> tmuxinatorConfigs;
 
@@ -35,13 +41,7 @@ public:
     const QRegularExpression triggerWordRegex{"tmux *"};
     const QIcon icon = QIcon::fromTheme("utilities-terminal");
     const QLatin1String tmuxinatorQuery{"inator"};
-
-    std::unique_ptr<TmuxRunnerAPI> api;
-
-public:
-    void match(KRunner::RunnerContext &context) override;
-    void reloadConfiguration() override;
-    void run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match) override;
+    TmuxRunnerAPI api;
 
     KRunner::QueryMatch createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance);
     QList<KRunner::QueryMatch> addTmuxAttachMatches(QString &term, const QString &openIn, const QString &program, QStringList &attached, bool *exactMatch);

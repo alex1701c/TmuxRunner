@@ -13,8 +13,9 @@ TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVari
 #else
     : KRunner::AbstractRunner(parent, data)
 #endif
+
+    , api(config())
 {
-    api.reset(new TmuxRunnerAPI(config()));
 }
 
 void TmuxRunner::reloadConfiguration()
@@ -48,7 +49,7 @@ void TmuxRunner::reloadConfiguration()
     }
 
     if (enableTmuxinator) {
-        tmuxinatorConfigs = api->fetchTmuxinatorConfigs();
+        tmuxinatorConfigs = api.fetchTmuxinatorConfigs();
         enableTmuxinator = !tmuxinatorConfigs.isEmpty();
     }
 
@@ -74,7 +75,7 @@ void TmuxRunner::match(KRunner::RunnerContext &context)
     // Flags to open other terminal emulator
     QString openIn;
     if (enableFlags) {
-        QString flagProgram = api->parseQueryFlags(term, openIn);
+        QString flagProgram = api.parseQueryFlags(term, openIn);
         if (!flagProgram.isEmpty()) {
             program = flagProgram;
         }
@@ -107,9 +108,9 @@ void TmuxRunner::run(const KRunner::RunnerContext &, const KRunner::QueryMatch &
     const QString target = data.value("target").toString();
 
     if (data.value("action") == "attach") {
-        api->executeAttatchCommand(program, target);
+        api.executeAttatchCommand(program, target);
     } else {
-        api->executeCreateCommand(program, target, data);
+        api.executeCreateCommand(program, target, data);
     }
 }
 
