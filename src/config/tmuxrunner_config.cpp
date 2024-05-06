@@ -1,19 +1,23 @@
 #include "tmuxrunner_config.h"
-#include <KSharedConfig>
 #include <KPluginFactory>
 #include <KRunner/AbstractRunner>
-#include <QGridLayout>
+#include <KSharedConfig>
+#include <KShell>
 #include <QDebug>
 #include <QDir>
-#include <KShell>
+#include <QGridLayout>
 
 K_PLUGIN_CLASS(TmuxRunnerConfig)
 
-TmuxRunnerConfigForm::TmuxRunnerConfigForm(QWidget *parent) : QWidget(parent) {
+TmuxRunnerConfigForm::TmuxRunnerConfigForm(QWidget *parent)
+    : QWidget(parent)
+{
     setupUi(this);
 }
 
-TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : KCModule(parent, args) {
+TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args)
+    : KCModule(parent, args)
+{
     m_ui = new TmuxRunnerConfigForm(this);
     auto *layout = new QGridLayout(this);
     layout->addWidget(m_ui, 0, 0);
@@ -25,7 +29,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     if (shortcutConfig.keyList().isEmpty()) {
         m_ui->shortcutList->hide();
     } else {
-        for (auto const &key:shortcutConfig.keyList()) {
+        for (auto const &key : shortcutConfig.keyList()) {
             m_ui->shortcutList->addItem(key + " ==> " + shortcutConfig.readEntry(key));
         }
     }
@@ -36,26 +40,27 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     m_ui->createSessionParameters->setText(customTerminalConfig.readEntry("new_params"));
 
     const auto program = config.readEntry("program", "konsole");
-    if (program == "konsole") m_ui->optionKonsole->setChecked(true);
-    else if (program == "yakuake-session") m_ui->optionYakuake->setChecked(true);
-    else if (program == "terminator") m_ui->optionTerminator->setChecked(true);
-    else if (program == "st") m_ui->optionSimpleTerminal->setChecked(true);
-    else if (program == "custom") m_ui->optionCustom->setChecked(true);
+    if (program == "konsole")
+        m_ui->optionKonsole->setChecked(true);
+    else if (program == "yakuake-session")
+        m_ui->optionYakuake->setChecked(true);
+    else if (program == "terminator")
+        m_ui->optionTerminator->setChecked(true);
+    else if (program == "st")
+        m_ui->optionSimpleTerminal->setChecked(true);
+    else if (program == "custom")
+        m_ui->optionCustom->setChecked(true);
 
-    m_ui->optionCustom->setEnabled(
-            !m_ui->createSessionParameters->text().isEmpty() &&
-            !m_ui->attachSessionProgram->text().isEmpty() &&
-            !m_ui->attachSessionParameters->text().isEmpty()
-    );
-   m_ui->actionComboBox->setCurrentText(config.readEntry("action_program", "None"));
+    m_ui->optionCustom->setEnabled(!m_ui->createSessionParameters->text().isEmpty() && !m_ui->attachSessionProgram->text().isEmpty()
+                                   && !m_ui->attachSessionParameters->text().isEmpty());
+    m_ui->actionComboBox->setCurrentText(config.readEntry("action_program", "None"));
 
     const auto changedSlotPointer = &TmuxRunnerConfig::markAsChanged;
 
     connect(m_ui->flags, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->tmuxinatorEnable, &QCheckBox::clicked, this, changedSlotPointer);
     // Terminals
-    connect(m_ui->actionComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-        this, changedSlotPointer);
+    connect(m_ui->actionComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, changedSlotPointer);
     connect(m_ui->optionKonsole, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->optionYakuake, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->optionTerminator, &QCheckBox::clicked, this, changedSlotPointer);
@@ -81,8 +86,8 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args) : 
     validateCustomArguments();
 }
 
-
-void TmuxRunnerConfig::defaults() {
+void TmuxRunnerConfig::defaults()
+{
     m_ui->flags->setChecked(true);
     m_ui->optionKonsole->setChecked(true);
     m_ui->tmuxinatorEnable->setChecked(true);
@@ -91,14 +96,19 @@ void TmuxRunnerConfig::defaults() {
     markAsChanged();
 }
 
-void TmuxRunnerConfig::save() {
-
+void TmuxRunnerConfig::save()
+{
     QString program;
-    if (m_ui->optionYakuake->isChecked()) program = "yakuake-session";
-    else if (m_ui->optionTerminator->isChecked()) program = "terminator";
-    else if (m_ui->optionSimpleTerminal->isChecked()) program = "st";
-    else if (m_ui->optionCustom->isChecked() && m_ui->optionCustom->isEnabled()) program = "custom";
-    else program = "konsole";
+    if (m_ui->optionYakuake->isChecked())
+        program = "yakuake-session";
+    else if (m_ui->optionTerminator->isChecked())
+        program = "terminator";
+    else if (m_ui->optionSimpleTerminal->isChecked())
+        program = "st";
+    else if (m_ui->optionCustom->isChecked() && m_ui->optionCustom->isEnabled())
+        program = "custom";
+    else
+        program = "konsole";
 
     config.writeEntry("enable_flags", m_ui->flags->isChecked());
     config.writeEntry("enable_tmuxinator", m_ui->tmuxinatorEnable->isChecked());
@@ -119,7 +129,7 @@ void TmuxRunnerConfig::save() {
         program = "konsole";
     }
 
-    for (const auto &key:shortcutConfig.keyList()) {
+    for (const auto &key : shortcutConfig.keyList()) {
         shortcutConfig.deleteEntry(key);
     }
     for (int i = 0; i < m_ui->shortcutList->count(); ++i) {
@@ -134,45 +144,48 @@ void TmuxRunnerConfig::save() {
     config.config()->sync();
 }
 
-void TmuxRunnerConfig::customOptionInsertion() {
-    const bool textsNotEmpty = !m_ui->createSessionParameters->text().isEmpty() &&
-        !m_ui->attachSessionProgram->text().isEmpty() &&
-        !m_ui->attachSessionParameters->text().isEmpty();
+void TmuxRunnerConfig::customOptionInsertion()
+{
+    const bool textsNotEmpty =
+        !m_ui->createSessionParameters->text().isEmpty() && !m_ui->attachSessionProgram->text().isEmpty() && !m_ui->attachSessionParameters->text().isEmpty();
     m_ui->optionCustom->setEnabled(textsNotEmpty);
-    if (textsNotEmpty && m_ui->actionComboBox->count() < 6){
+    if (textsNotEmpty && m_ui->actionComboBox->count() < 6) {
         m_ui->actionComboBox->addItem("Custom");
-    }else if (m_ui->actionComboBox->count() == 6){
+    } else if (m_ui->actionComboBox->count() == 6) {
         m_ui->actionComboBox->removeItem(5);
     }
     validateCustomArguments();
 }
 
-void TmuxRunnerConfig::shortcutInsertion() {
-    m_ui->shortcutAddButton->setEnabled(!m_ui->shortcutKey->text().isEmpty()
-                                        && m_ui->shortcutKey->text().startsWith("$") &&
-                                        !m_ui->shortcutPath->text().isEmpty());
+void TmuxRunnerConfig::shortcutInsertion()
+{
+    m_ui->shortcutAddButton->setEnabled(!m_ui->shortcutKey->text().isEmpty() && m_ui->shortcutKey->text().startsWith("$")
+                                        && !m_ui->shortcutPath->text().isEmpty());
     m_ui->shortcutDeleteButton->setEnabled(m_ui->shortcutList->currentIndex().row() != -1);
 }
 
-void TmuxRunnerConfig::addShortcut() {
+void TmuxRunnerConfig::addShortcut()
+{
     m_ui->shortcutList->setHidden(false);
     m_ui->shortcutList->addItem(m_ui->shortcutKey->text() + " ==> " + m_ui->shortcutPath->text());
     m_ui->shortcutKey->clear();
     m_ui->shortcutPath->clear();
 }
 
-void TmuxRunnerConfig::deleteShortcut() {
+void TmuxRunnerConfig::deleteShortcut()
+{
     m_ui->shortcutList->model()->removeRow(m_ui->shortcutList->currentRow());
 }
 
-bool TmuxRunnerConfig::splitArguments(const QString &arg) {
+bool TmuxRunnerConfig::splitArguments(const QString &arg)
+{
     KShell::Errors splitArgsError;
     KShell::splitArgs(arg, KShell::AbortOnMeta, &splitArgsError);
     return splitArgsError == KShell::Errors::NoError;
-
 }
 
-void TmuxRunnerConfig::validateCustomArguments() {
+void TmuxRunnerConfig::validateCustomArguments()
+{
     QString errorMessage;
     if (!splitArguments(m_ui->attachSessionParameters->text())) {
         errorMessage.append("The attach session parameters are not valid!\n");
@@ -197,6 +210,5 @@ void TmuxRunnerConfig::validateCustomArguments() {
         }
     }
 }
-
 
 #include "tmuxrunner_config.moc"

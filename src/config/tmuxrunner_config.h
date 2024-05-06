@@ -7,15 +7,17 @@
 #include <KMessageWidget>
 #include <QTimer>
 
-class TmuxRunnerConfigForm : public QWidget, public Ui::TmuxRunnerConfigUi {
-Q_OBJECT
+class TmuxRunnerConfigForm : public QWidget, public Ui::TmuxRunnerConfigUi
+{
+    Q_OBJECT
 
 public:
     explicit TmuxRunnerConfigForm(QWidget *parent);
 };
 
-class TmuxRunnerConfig : public KCModule {
-Q_OBJECT
+class TmuxRunnerConfig : public KCModule
+{
+    Q_OBJECT
 
 public:
     explicit TmuxRunnerConfig(QWidget *parent = nullptr, const QVariantList &args = QVariantList());
@@ -25,21 +27,13 @@ public:
     KConfigGroup customTerminalConfig;
 
 public Q_SLOTS:
-
     void save() override;
-
     void defaults() override;
-
     void addShortcut();
-
     void deleteShortcut();
-
     void customOptionInsertion();
-
     void shortcutInsertion();
-
     bool splitArguments(const QString &arg);
-
     void validateCustomArguments();
 
 private:

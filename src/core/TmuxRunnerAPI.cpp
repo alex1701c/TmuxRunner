@@ -4,19 +4,22 @@
 #include <KMacroExpander>
 #include <KNotifications/KNotification>
 #include <KShell>
-#include <QProcess>
 #include <QDir>
+#include <QProcess>
 
-TmuxRunnerAPI::TmuxRunnerAPI(const KConfigGroup &config) : config(config) {
+TmuxRunnerAPI::TmuxRunnerAPI(const KConfigGroup &config)
+    : config(config)
+{
 }
 
-QString TmuxRunnerAPI::filterPath(QString path) {
+QString TmuxRunnerAPI::filterPath(QString path)
+{
     if (path.isEmpty()) {
         return QDir::homePath();
     }
     const auto shortcutConfig = config.group("Shortcuts");
     const auto keyList = shortcutConfig.keyList();
-    for (const auto &key: keyList) {
+    for (const auto &key : keyList) {
         path.replace(key, shortcutConfig.readEntry(key));
     }
     if (path.startsWith('~')) {
@@ -27,7 +30,8 @@ QString TmuxRunnerAPI::filterPath(QString path) {
     return path;
 }
 
-QStringList TmuxRunnerAPI::fetchTmuxSessions() {
+QStringList TmuxRunnerAPI::fetchTmuxSessions()
+{
     QStringList tmuxSessions;
     QProcess process;
     process.start(fetchProgram, fetchArgs);
@@ -41,7 +45,8 @@ QStringList TmuxRunnerAPI::fetchTmuxSessions() {
     return tmuxSessions;
 }
 
-void TmuxRunnerAPI::executeAttatchCommand(QString &program, const QString &target) {
+void TmuxRunnerAPI::executeAttatchCommand(QString &program, const QString &target)
+{
     QStringList args;
     if (program == "yakuake-session") {
         args.append({"-t", target, "-e", "tmux", "attach-session", "-t", target});
@@ -68,27 +73,30 @@ void TmuxRunnerAPI::executeAttatchCommand(QString &program, const QString &targe
     QProcess::startDetached(program, args);
 }
 
-void TmuxRunnerAPI::executeCreateCommand(QString &program,
-                                         const QString &target,
-                                         const QMap<QString, QVariant> &data) {
+void TmuxRunnerAPI::executeCreateCommand(QString &program, const QString &target, const QMap<QString, QVariant> &data)
+{
     QStringList args;
     const QString path = filterPath(data.value("path").toString());
     if (program == "yakuake") {
         if (data.value("action") != "tmuxinator")
             args.append({"-t", target, "-e", "tmux", "new-session", "-s", target});
-        else args.append({"-t", target, "-e", "tmuxinator", target});
+        else
+            args.append({"-t", target, "-e", "tmuxinator", target});
     } else if (program == "terminator") {
-        if (data.value("action") != "tmuxinator") args.append({"-x", "tmux", "new-session", "-s", target});
-        else args.append({"-x", "tmuxinator", target});
+        if (data.value("action") != "tmuxinator")
+            args.append({"-x", "tmux", "new-session", "-s", target});
+        else
+            args.append({"-x", "tmuxinator", target});
     } else if (program == "st") {
-        if (data.value("action") != "tmuxinator") args.append({"tmux", "new-session", "-s", target});
-        else args.append({"tmuxinator", target});
+        if (data.value("action") != "tmuxinator")
+            args.append({"tmux", "new-session", "-s", target});
+        else
+            args.append({"tmuxinator", target});
     } else if (program == "custom") {
         const auto customConfig = config.group("Custom");
         program = customConfig.readEntry("program");
         QString arg = customConfig.readEntry("new_params");
-        QHash<QString, QString> variables = {{"name", target},
-                                             {"path", path}};
+        QHash<QString, QString> variables = {{"name", target}, {"path", path}};
         arg = KMacroExpander::expandMacrosShellQuote(arg, variables);
         const auto splitPair = splitArguments(arg);
         if (splitPair.first) {
@@ -130,7 +138,8 @@ void TmuxRunnerAPI::executeCreateCommand(QString &program,
     QProcess::startDetached(program, args);
 }
 
-QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs() {
+QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs()
+{
     QStringList tmuxinatorConfigs;
     QProcess isTmuxinatorInstalledProcess;
     isTmuxinatorInstalledProcess.start("whereis", QStringList{"-b", "tmuxinator"});
@@ -153,7 +162,7 @@ QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs() {
         return tmuxinatorConfigs;
     }
     const auto entries = _entries.at(1).split(' ');
-    for (const auto &entry:entries) {
+    for (const auto &entry : entries) {
         if (!entry.isEmpty()) {
             tmuxinatorConfigs.append(entry);
         }
@@ -161,7 +170,8 @@ QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs() {
     return tmuxinatorConfigs;
 }
 
-QString TmuxRunnerAPI::parseQueryFlags(QString &term, QString &openIn) {
+QString TmuxRunnerAPI::parseQueryFlags(QString &term, QString &openIn)
+{
     // Flag at end of query or just a flag with no session name
     QString program;
     if (term.size() >= 2 && term.contains(queryHasFlag)) {
@@ -179,15 +189,14 @@ QString TmuxRunnerAPI::parseQueryFlags(QString &term, QString &openIn) {
     return program;
 }
 
-QPair<bool, QStringList> TmuxRunnerAPI::splitArguments(const QString &argument) {
+QPair<bool, QStringList> TmuxRunnerAPI::splitArguments(const QString &argument)
+{
     KShell::Errors splitArgsError;
     const auto args = KShell::splitArgs(argument, KShell::AbortOnMeta, &splitArgsError);
     return {splitArgsError == KShell::Errors::NoError, args};
 }
 
-void TmuxRunnerAPI::showErrorNotification(const QString &msg) {
-    KNotification::event(KNotification::Error,
-                         QStringLiteral("Tmux Runner"),
-                         msg,
-                         QStringLiteral("utility-terminal"));
+void TmuxRunnerAPI::showErrorNotification(const QString &msg)
+{
+    KNotification::event(KNotification::Error, QStringLiteral("Tmux Runner"), msg, QStringLiteral("utility-terminal"));
 }

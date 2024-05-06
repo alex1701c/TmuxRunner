@@ -7,7 +7,8 @@
 #include <QString>
 #include <QStringList>
 
-class TmuxRunnerAPI {
+class TmuxRunnerAPI
+{
 public:
     TmuxRunnerAPI(const KConfigGroup &config);
 
@@ -33,14 +34,13 @@ private:
     const QString fetchProgram = QStringLiteral("tmux");
     const QStringList fetchArgs = {QStringLiteral("ls")};
     const QMap<QString, QString> flags = {
-            {"k", "konsole"},
-            {"y", "yakuake-session"},
-            {"t", "terminator"},
-            {"s", "st"},
-            {"c", "custom"},
+        {"k", "konsole"},
+        {"y", "yakuake-session"},
+        {"t", "terminator"},
+        {"s", "st"},
+        {"c", "custom"},
     };
     QRegularExpression queryHasFlag = QRegularExpression(QStringLiteral(" ?-([a-z])$"));
 };
 
-
-#endif //TMUXRUNNER_TMUXRUNNERAPI_H
+#endif // TMUXRUNNER_TMUXRUNNERAPI_H

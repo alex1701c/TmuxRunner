@@ -12,6 +12,7 @@ find_package(Qt5 ${QT_MIN_VERSION} REQUIRED CONFIG COMPONENTS Widgets Core Quick
 find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Service Runner TextWidgets ConfigWidgets Notifications)
 include(KDEInstallDirs)
 include(KDECMakeSettings)
+include(KDEClangFormat)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(FeatureSummary)
 
