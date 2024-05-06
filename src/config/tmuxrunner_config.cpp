@@ -15,11 +15,11 @@ TmuxRunnerConfigForm::TmuxRunnerConfigForm(QWidget *parent)
     setupUi(this);
 }
 
-TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args)
-    : KCModule(parent, args)
+TmuxRunnerConfig::TmuxRunnerConfig(QObject *parent, const QVariantList &)
+    : KCModule(parent)
 {
-    m_ui = new TmuxRunnerConfigForm(this);
-    auto *layout = new QGridLayout(this);
+    m_ui = new TmuxRunnerConfigForm(widget());
+    auto *layout = new QGridLayout(widget());
     layout->addWidget(m_ui, 0, 0);
 
     config = KSharedConfig::openConfig("krunnerrc")->group("Runners").group("krunner_tmuxrunner");
@@ -60,7 +60,7 @@ TmuxRunnerConfig::TmuxRunnerConfig(QWidget *parent, const QVariantList &args)
     connect(m_ui->flags, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->tmuxinatorEnable, &QCheckBox::clicked, this, changedSlotPointer);
     // Terminals
-    connect(m_ui->actionComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, changedSlotPointer);
+    connect(m_ui->actionComboBox, &QComboBox::currentIndexChanged, this, changedSlotPointer);
     connect(m_ui->optionKonsole, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->optionYakuake, &QCheckBox::clicked, this, changedSlotPointer);
     connect(m_ui->optionTerminator, &QCheckBox::clicked, this, changedSlotPointer);
@@ -200,7 +200,7 @@ void TmuxRunnerConfig::validateCustomArguments()
             errorMessageWidget->setText(errorMessage);
             errorMessageWidget->show();
         } else {
-            errorMessageWidget = new KMessageWidget(errorMessage, this);
+            errorMessageWidget = new KMessageWidget(errorMessage, widget());
             errorMessageWidget->setMessageType(KMessageWidget::Error);
             m_ui->errorMessagesLayout->addWidget(errorMessageWidget);
         }

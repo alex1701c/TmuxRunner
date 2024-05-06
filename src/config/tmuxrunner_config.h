@@ -20,7 +20,7 @@ class TmuxRunnerConfig : public KCModule
     Q_OBJECT
 
 public:
-    explicit TmuxRunnerConfig(QWidget *parent = nullptr, const QVariantList &args = QVariantList());
+    explicit TmuxRunnerConfig(QObject *parent, const QVariantList &);
 
     KConfigGroup config;
     KConfigGroup shortcutConfig;
