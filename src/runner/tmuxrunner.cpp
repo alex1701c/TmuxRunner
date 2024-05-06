@@ -134,7 +134,7 @@ QList<KRunner::QueryMatch> TmuxRunner::addTmuxinatorMatches(QString &term, const
     const static QRegularExpression tmuxinatorClearRegex = QRegularExpression("^inator *");
     term.remove(tmuxinatorClearRegex);
     const QString filter = tmuxinatorMatch.captured(1);
-    for (const auto &tmuxinatorConfig : qAsConst(tmuxinatorConfigs)) {
+    for (const auto &tmuxinatorConfig : std::as_const(tmuxinatorConfigs)) {
         if (tmuxinatorConfig.startsWith(filter)) {
             if (!tmuxSessions.contains(tmuxinatorConfig)) {
                 matches.append(
@@ -161,7 +161,7 @@ TmuxRunner::addTmuxAttachMatches(QString &term, const QString &openIn, const QSt
 {
     QList<KRunner::QueryMatch> matches;
     const auto queryName = term.contains(' ') ? term.split(' ').first() : term;
-    for (const auto &session : qAsConst(tmuxSessions)) {
+    for (const auto &session : std::as_const(tmuxSessions)) {
         if (session.startsWith(queryName)) {
             if (session == queryName)
                 *exactMatch = true;

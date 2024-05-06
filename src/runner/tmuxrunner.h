@@ -30,7 +30,7 @@ private:
     // Default program used for launching sessions, can be overwritten using flags
     QString defaultProgram;
     QString actionProgram;
-#if KRUNNER_VERSION_MAJOR == 5
+#if QT_VERSION_MAJOR == 5
     QList<QAction *> actionList;
 #else
     KRunner::Actions actionList;
