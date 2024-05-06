@@ -13,13 +13,18 @@ find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Service Runner Text
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDEClangFormat)
+include(ECMDeprecationSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(FeatureSummary)
+
+ecm_set_disabled_deprecation_versions(
+	KF 6.0.0
+	QT 5.15.0
+)
 
 add_subdirectory(src)
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
-
 
 # CPack build
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Krunner plugin to start and attach to tmux sessions")

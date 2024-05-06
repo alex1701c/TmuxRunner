@@ -4,7 +4,7 @@
 #include "core/TmuxRunnerAPI.h"
 #include <KRunner/AbstractRunner>
 #include <KSharedConfig>
-#include <QFileSystemWatcher>
+#include <QIcon>
 
 class TmuxRunner : public Plasma::AbstractRunner
 {
@@ -13,7 +13,6 @@ class TmuxRunner : public Plasma::AbstractRunner
 public:
     TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
 
-    QFileSystemWatcher watcher;
     QList<QString> tmuxSessions;
     QList<QString> tmuxinatorConfigs;
 

@@ -13,9 +13,6 @@ TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVari
     api.reset(new TmuxRunnerAPI(config()));
 }
 
-/**
- * Call method whenever the config file changes, the normal reloadConfiguration method gets called to often
- */
 void TmuxRunner::reloadConfiguration()
 {
     // Method was triggered using file watcher => get new state from file
@@ -194,7 +191,7 @@ QList<Plasma::QueryMatch> TmuxRunner::addTmuxNewSessionMatches(QString &term, co
     return matches;
 }
 
-K_EXPORT_PLASMA_RUNNER_WITH_JSON(TmuxRunner, "tmuxrunner.json")
+K_PLUGIN_CLASS_WITH_JSON(TmuxRunner, "tmuxrunner.json")
 
 // needed for the QObject subclass declared as part of K_EXPORT_PLASMA_RUNNER
 #include "tmuxrunner.moc"
