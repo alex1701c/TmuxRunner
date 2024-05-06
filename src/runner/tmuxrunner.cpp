@@ -199,5 +199,5 @@ QList<KRunner::QueryMatch> TmuxRunner::addTmuxNewSessionMatches(QString &term, c
 
 K_PLUGIN_CLASS_WITH_JSON(TmuxRunner, "tmuxrunner.json")
 
-// needed for the QObject subclass declared as part of K_EXPORT_PLASMA_RUNNER
+#include "moc_tmuxrunner.cpp"
 #include "tmuxrunner.moc"

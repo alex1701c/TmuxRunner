@@ -210,4 +210,5 @@ void TmuxRunnerConfig::validateCustomArguments()
     }
 }
 
+#include "moc_tmuxrunner_config.cpp"
 #include "tmuxrunner_config.moc"
