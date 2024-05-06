@@ -6,7 +6,7 @@
 #include <KSharedConfig>
 #include <QIcon>
 
-class TmuxRunner : public Plasma::AbstractRunner
+class TmuxRunner : public KRunner::AbstractRunner
 {
     Q_OBJECT
 
@@ -31,14 +31,14 @@ public:
     std::unique_ptr<TmuxRunnerAPI> api;
 
 public:
-    void match(Plasma::RunnerContext &context) override;
+    void match(KRunner::RunnerContext &context) override;
     void reloadConfiguration() override;
-    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
+    void run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match) override;
 
-    Plasma::QueryMatch createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance);
-    QList<Plasma::QueryMatch> addTmuxAttachMatches(QString &term, const QString &openIn, const QString &program, QStringList &attached, bool *exactMatch);
-    QList<Plasma::QueryMatch> addTmuxNewSessionMatches(QString &term, const QString &openIn, const QString &program, bool tmuxinator);
-    QList<Plasma::QueryMatch> addTmuxinatorMatches(QString &term, const QString &openIn, const QString &program, QStringList &attached);
+    KRunner::QueryMatch createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance);
+    QList<KRunner::QueryMatch> addTmuxAttachMatches(QString &term, const QString &openIn, const QString &program, QStringList &attached, bool *exactMatch);
+    QList<KRunner::QueryMatch> addTmuxNewSessionMatches(QString &term, const QString &openIn, const QString &program, bool tmuxinator);
+    QList<KRunner::QueryMatch> addTmuxinatorMatches(QString &term, const QString &openIn, const QString &program, QStringList &attached);
 };
 
 #endif

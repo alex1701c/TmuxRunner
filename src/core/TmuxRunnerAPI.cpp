@@ -2,7 +2,7 @@
 
 #include <KConfigGroup>
 #include <KMacroExpander>
-#include <KNotifications/KNotification>
+#include <KNotification>
 #include <KShell>
 #include <QDir>
 #include <QProcess>

@@ -8,7 +8,7 @@
 #include <QFile>
 
 TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
-    : Plasma::AbstractRunner(parent, data, args)
+    : KRunner::AbstractRunner(parent, data, args)
 {
     api.reset(new TmuxRunnerAPI(config()));
 }
@@ -46,17 +46,19 @@ void TmuxRunner::reloadConfiguration()
         enableTmuxinator = !tmuxinatorConfigs.isEmpty();
     }
 
-    setSyntaxes({Plasma::RunnerSyntax("tmux", "List available tmux sessions"),
-                 Plasma::RunnerSyntax("tmux :q:", "Filter sessions or create new session for the given term")});
+    setSyntaxes({
+        KRunner::RunnerSyntax("tmux", "List available tmux sessions"),
+        KRunner::RunnerSyntax("tmux :q:", "Filter sessions or create new session for the given term"),
+    });
 }
 
-void TmuxRunner::match(Plasma::RunnerContext &context)
+void TmuxRunner::match(KRunner::RunnerContext &context)
 {
     QString term = context.query();
     if (!term.startsWith(triggerWord))
         return;
     term.remove(triggerWordRegex);
-    QList<Plasma::QueryMatch> matches;
+    QList<KRunner::QueryMatch> matches;
     bool exactMatch = false;
     bool tmuxinator = false;
 
@@ -89,10 +91,8 @@ void TmuxRunner::match(Plasma::RunnerContext &context)
     context.addMatches(matches);
 }
 
-void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void TmuxRunner::run(const KRunner::RunnerContext &, const KRunner::QueryMatch &match)
 {
-    Q_UNUSED(context)
-
     QMap<QString, QVariant> data = match.data().toMap();
     QString program = data.value("program", defaultProgram).toString();
     if (match.selectedAction()) {
@@ -107,9 +107,9 @@ void TmuxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
     }
 }
 
-Plasma::QueryMatch TmuxRunner::createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance)
+KRunner::QueryMatch TmuxRunner::createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance)
 {
-    Plasma::QueryMatch match(this);
+    KRunner::QueryMatch match(this);
     match.setIcon(icon);
     match.setText(text);
     match.setData(data);
@@ -118,9 +118,9 @@ Plasma::QueryMatch TmuxRunner::createMatch(const QString &text, const QMap<QStri
     return match;
 }
 
-QList<Plasma::QueryMatch> TmuxRunner::addTmuxinatorMatches(QString &term, const QString &openIn, const QString &program, QStringList &attached)
+QList<KRunner::QueryMatch> TmuxRunner::addTmuxinatorMatches(QString &term, const QString &openIn, const QString &program, QStringList &attached)
 {
-    QList<Plasma::QueryMatch> matches;
+    QList<KRunner::QueryMatch> matches;
     const static QRegularExpression tmuxinatorQueryRegex = QRegularExpression(R"(inator(?: (\w+) *(.+)?)?)");
     const QRegularExpressionMatch tmuxinatorMatch = tmuxinatorQueryRegex.match(term);
 
@@ -149,10 +149,10 @@ QList<Plasma::QueryMatch> TmuxRunner::addTmuxinatorMatches(QString &term, const 
     return matches;
 }
 
-QList<Plasma::QueryMatch>
+QList<KRunner::QueryMatch>
 TmuxRunner::addTmuxAttachMatches(QString &term, const QString &openIn, const QString &program, QStringList &attached, bool *exactMatch)
 {
-    QList<Plasma::QueryMatch> matches;
+    QList<KRunner::QueryMatch> matches;
     const auto queryName = term.contains(' ') ? term.split(' ').first() : term;
     for (const auto &session : qAsConst(tmuxSessions)) {
         if (session.startsWith(queryName)) {
@@ -168,9 +168,9 @@ TmuxRunner::addTmuxAttachMatches(QString &term, const QString &openIn, const QSt
     return matches;
 }
 
-QList<Plasma::QueryMatch> TmuxRunner::addTmuxNewSessionMatches(QString &term, const QString &openIn, const QString &program, bool tmuxinator)
+QList<KRunner::QueryMatch> TmuxRunner::addTmuxNewSessionMatches(QString &term, const QString &openIn, const QString &program, bool tmuxinator)
 {
-    QList<Plasma::QueryMatch> matches;
+    QList<KRunner::QueryMatch> matches;
     // Name and optional path, Online tester : https://regex101.com/r/FdZcIZ/1
     const static QRegularExpression regex(R"(^([\w-]+)(?: +(.+)?)?$)");
     const auto matchResult = regex.match(term);

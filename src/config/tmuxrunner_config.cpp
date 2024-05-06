@@ -1,6 +1,5 @@
 #include "tmuxrunner_config.h"
 #include <KPluginFactory>
-#include <KRunner/AbstractRunner>
 #include <KSharedConfig>
 #include <KShell>
 #include <QDebug>
