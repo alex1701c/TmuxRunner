@@ -15,7 +15,6 @@ public:
     QFileSystemWatcher watcher;
     QList<QString> tmuxSessions;
     QList<QString> tmuxinatorConfigs;
-    KConfigGroup config;
 
     bool enableTmuxinator, enableFlags;
     // Default program used for launching sessions, can be overwritten using flags
@@ -31,11 +30,10 @@ public:
 
     std::unique_ptr<TmuxRunnerAPI> api;
 
-protected Q_SLOTS:
-    void reloadPluginConfiguration(const QString &path = QString());
 
 public:
     void match(Plasma::RunnerContext &context) override;
+    void reloadConfiguration() override;
     void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
 
     Plasma::QueryMatch createMatch(const QString &text, const QMap<QString, QVariant> &data, float relevance);

@@ -10,41 +10,19 @@
 
 TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
         : Plasma::AbstractRunner(parent, data, args) {
-    setObjectName(QStringLiteral("TmuxRunner"));
-
-    const QString configFolder = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/krunnerplugins/";
-    const QDir configDir(configFolder);
-    if (!configDir.exists()) configDir.mkpath(configFolder);
-    // Create file
-    QFile configFile(configFolder + "tmuxrunnerrc");
-    if (!configFile.exists()) {
-        configFile.open(QIODevice::WriteOnly);
-        configFile.close();
-    }
-    // Add file watcher for config
-    watcher.addPath(configFolder + "tmuxrunnerrc");
-    connect(&watcher, &QFileSystemWatcher::fileChanged, this, &TmuxRunner::reloadPluginConfiguration);
-    connect(this, &TmuxRunner::prepare, this, [this]() {
-        tmuxSessions = api->fetchTmuxSessions();
-    });
-
-    config = KSharedConfig::openConfig(TmuxRunnerAPI::configFileLocation())->group("Config");
-
-    api.reset(new TmuxRunnerAPI(config));
-
-    reloadPluginConfiguration();
+    api.reset(new TmuxRunnerAPI(config()));
 }
 
 /**
  * Call method whenever the config file changes, the normal reloadConfiguration method gets called to often
  */
-void TmuxRunner::reloadPluginConfiguration(const QString &path) {
+void TmuxRunner::reloadConfiguration() {
     // Method was triggered using file watcher => get new state from file
-    if (!path.isEmpty()) config.config()->reparseConfiguration();
-    enableTmuxinator = config.readEntry("enable_tmuxinator", true);
-    enableFlags = config.readEntry("enable_flags", true);
-    defaultProgram = config.readEntry("program", "konsole");
-    const QString actionChoiceText = config.readEntry("action_program", "None");
+    const KConfigGroup grp = config();
+    enableTmuxinator = grp.readEntry("enable_tmuxinator", true);
+    enableFlags = grp.readEntry("enable_flags", true);
+    defaultProgram = grp.readEntry("program", "konsole");
+    const QString actionChoiceText = grp.readEntry("action_program", "None");
     const QString actionChoice = actionChoiceText.toLower();
     if(actionChoice == QLatin1String("none")){
         qDeleteAll(actionList);
@@ -66,27 +44,20 @@ void TmuxRunner::reloadPluginConfiguration(const QString &path) {
         actionList = {new QAction(actionIcon, "Open session in " + actionChoiceText, this)};
     }
 
-    // If the file gets edited with a text editor, it often gets replaced by the edited version
-    // https://stackoverflow.com/a/30076119/9342842
-    if (!path.isEmpty()) {
-        if (QFile::exists(path)) {
-            watcher.addPath(path);
-        }
-    }
     if (enableTmuxinator) {
         tmuxinatorConfigs = api->fetchTmuxinatorConfigs();
         enableTmuxinator = !tmuxinatorConfigs.isEmpty();
     }
 
-    QList<Plasma::RunnerSyntax> syntaxes;
-    syntaxes.append(Plasma::RunnerSyntax("tmux", "List available tmux sessions"));
-    syntaxes.append(Plasma::RunnerSyntax("tmux :q:", "Filter sessions or create new session for the given term"));
-    setSyntaxes(syntaxes);
+    setSyntaxes({
+        Plasma::RunnerSyntax("tmux", "List available tmux sessions"),
+        Plasma::RunnerSyntax("tmux :q:", "Filter sessions or create new session for the given term")
+    });
 }
 
 void TmuxRunner::match(Plasma::RunnerContext &context) {
     QString term = context.query();
-    if (!context.isValid() || !term.startsWith(triggerWord)) return;
+    if (!term.startsWith(triggerWord)) return;
     term.remove(triggerWordRegex);
     QList<Plasma::QueryMatch> matches;
     bool exactMatch = false;
