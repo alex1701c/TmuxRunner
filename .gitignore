@@ -1,7 +1,9 @@
 /.kdev4
-/build
+/build*
 /.idea
 /.vscode
 /cmake-build*
 /compile_commands.json
 *.swap
+/.clang-format
+.cache
