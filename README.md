@@ -26,7 +26,6 @@ You can also combine this with the terminal flags as explained above.
 
 ### 1 Required Dependencies
 
-
 <details>
 <summary><b>Debian/Ubuntu</b></summary>
 
@@ -36,7 +35,7 @@ sudo apt install git cmake extra-cmake-modules build-essential libkf5runner-dev 
 ```
 Plasma6:  
 ```bash install-ubuntu-plasma6
-sudo apt install git cmake extra-cmake-modules build-essential libkf6runner-dev libkf6i18n-dev libkf6service-dev libkf6kcmutils-dev libkf6knotifications-dev libkf6dbusaddons-bin tmux wmctrl
+sudo apt install git cmake extra-cmake-modules build-essential libkf6runner-dev libkf6i18n-dev libkf6service-dev libkf6kcmutils-dev libkf6notifications-dev libkf6dbusaddons-bin tmux wmctrl
 ```
 
 </details>
@@ -67,21 +66,6 @@ Plasma6:
 sudo dnf install git cmake extra-cmake-modules kf6-ki18n-devel kf6-krunner-devel kf6-kcmutils-devel kf6-kservice-devel kf6-knotifications-devel tmux wmctrl
 ```
 
-</details>
-Required Dependencies
-----------------------
-Debian/Ubuntu:  
-`sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext libkf5notifications-dev libkf5kcmutils-dev wmctrl tmux`
-
-openSUSE:  
-`sudo zypper install cmake extra-cmake-modules libQt5Widgets5 libQt5Core5 libqt5-qtlocation-devel ki18n-devel ktextwidgets-devel kconfigwidgets-devel kservice-devel krunner-devel gettext-tools knotifications-devel kcmutils-devel tmux wmctrl`  
-
-Fedora:  
-`sudo dnf install cmake extra-cmake-modules kf5-ki18n-devel kf5-kservice-devel kf5-krunner-devel kf5-ktextwidgets-devel gettext kf5-knotifications-devel kf5-kcmutils-devel tmux wmctrl`  
-
-Archlinux(Manjaro):  
-`sudo pacman -S cmake extra-cmake-modules knotifications kcmutils tmux wmctrl` 
-    
 ### Build instructions
 
 The easiest way to install is:  
@@ -92,28 +76,16 @@ Or you can do it manually:
 ```
 git clone https://github.com/alex1701c/TmuxRunner
 cd TmuxRunner
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DKDE_INSTALL_QTPLUGINDIR=$(kf5-config --qt-plugins) ..
-make -j$(nproc)
-sudo make install
+./install.sh
 # Optional for yakuake support
 sudo curl https://raw.githubusercontent.com/aplatanado/yakuake-session/master/yakuake-session -o /usr/bin/yakuake-session
 sudo chmod +x /usr/bin/yakuake-session
 ```
 
-Restart KRunner to load the runner (in a terminal type: kquitapp5 krunner;kstart5 krunner )
-
 ### Configuration
 1. Search for "Plasma Search" in Krunner
 2. open system settings entry 
 3. search for "tmux" in the search field
-
-alternatively, run
-
-```bash
-kcmshell5 plasmasearch --args tmuxrunner
-```
 
 ### Screenshots
 
