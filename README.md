@@ -24,6 +24,50 @@ Additionally this plugin supports tmuxinator by letting you create new sessions 
 You can also combine this with the terminal flags as explained above.  
 
 
+### 1 Required Dependencies
+
+
+<details>
+<summary><b>Debian/Ubuntu</b></summary>
+
+Plasma5:  
+```bash install-ubuntu-plasma5
+sudo apt install git cmake extra-cmake-modules build-essential libkf5runner-dev libkf5i18n-dev libkf5service-dev libkf5kcmutils-dev libkf5notifications-dev libkf5dbusaddons-bin tmux wmctrl
+```
+Plasma6:  
+```bash install-ubuntu-plasma6
+sudo apt install git cmake extra-cmake-modules build-essential libkf6runner-dev libkf6i18n-dev libkf6service-dev libkf6kcmutils-dev libkf6knotifications-dev libkf6dbusaddons-bin tmux wmctrl
+```
+
+</details>
+
+<details>
+<summary><b>OpenSUSE</b></summary>
+
+Plasma5:  
+```bash install-opensuse-plasma5
+sudo zypper install git cmake extra-cmake-modules ki18n-devel krunner-devel kcmutils-devel kservice-devel knotifications-devel kdbusaddons-tools tmux wmctrl
+```
+Plasma6:  
+```bash install-opensuse-plasma6
+sudo zypper install git cmake kf6-extra-cmake-modules kf6-ki18n-devel kf6-krunner-devel kf6-kcmutils-devel kf6-kservice-devel kf6-knotifications-devel kf6-kdbusaddons-tools tmux wmctrl
+```
+
+</details>
+
+<details>
+<summary><b>Fedora</b></summary>
+
+Plasma5:  
+```bash install-fedora-plasma5
+sudo dnf install git cmake extra-cmake-modules kf5-ki18n-devel kf5-krunner-devel kf5-kcmutils-devel kf5-kservice-devel kf5-knotifications-devel tmux wmctrl
+```
+Plasma6:  
+```bash install-fedora-plasma6
+sudo dnf install git cmake extra-cmake-modules kf6-ki18n-devel kf6-krunner-devel kf6-kcmutils-devel kf6-kservice-devel kf6-knotifications-devel tmux wmctrl
+```
+
+</details>
 Required Dependencies
 ----------------------
 Debian/Ubuntu:  
