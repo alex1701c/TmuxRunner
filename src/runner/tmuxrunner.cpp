@@ -16,6 +16,9 @@ TmuxRunner::TmuxRunner(QObject *parent, const KPluginMetaData &data, const QVari
 
     , api(config())
 {
+    connect(this, &KRunner::AbstractRunner::prepare, this, [this]() {
+        tmuxSessions = api.fetchTmuxSessions();
+    });
 }
 
 void TmuxRunner::reloadConfiguration()
