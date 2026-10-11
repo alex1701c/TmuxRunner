@@ -22,9 +22,8 @@ QString TmuxRunnerAPI::filterPath(QString path)
     for (const auto &key : keyList) {
         path.replace(key, shortcutConfig.readEntry(key));
     }
-    if (path.startsWith('~')) {
-        path.replace(0, 1, QDir::homePath());
-    } else if (!path.startsWith('/')) {
+    path = KShell::tildeExpand(path);
+    if (!path.startsWith('/')) {
         path.insert(0, QDir::homePath() + "/");
     }
     return path;
