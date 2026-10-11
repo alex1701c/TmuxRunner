@@ -22,9 +22,8 @@ QString TmuxRunnerAPI::filterPath(QString path)
     for (const auto &key : keyList) {
         path.replace(key, shortcutConfig.readEntry(key));
     }
-    if (path.startsWith('~')) {
-        path.replace('~', QDir::homePath());
-    } else if (!path.startsWith('/')) {
+    path = KShell::tildeExpand(path);
+    if (!path.startsWith('/')) {
         path.insert(0, QDir::homePath() + "/");
     }
     return path;
@@ -34,98 +33,99 @@ QStringList TmuxRunnerAPI::fetchTmuxSessions()
 {
     QStringList tmuxSessions;
     QProcess process;
-    process.start(fetchProgram, fetchArgs);
+    process.start(QStringLiteral("tmux"), {QStringLiteral("list-sessions"), QStringLiteral("-F"), QStringLiteral("#{session_name}")});
     process.waitForFinished(1000);
     while (process.canReadLine()) {
-        const QString line = process.readLine();
-        if (line.contains(lineSeparator)) {
-            tmuxSessions.append(line.split(lineSeparator).first());
+        const QString line = QString::fromUtf8(process.readLine()).trimmed();
+        if (!line.isEmpty()) {
+            tmuxSessions.append(line);
         }
     }
     return tmuxSessions;
 }
 
-void TmuxRunnerAPI::executeAttatchCommand(QString &program, const QString &target)
+QStringList TmuxRunnerAPI::wrapInTerminal(const QString &program, const QString &title, const QStringList &command)
 {
-    QStringList args;
-    if (program == "yakuake-session") {
-        args.append({"-t", target, "-e", "tmux", "attach-session", "-t", target});
-    } else if (program == "terminator") {
-        args.append({"-x", "tmux", "a", "-t", target});
-    } else if (program == "st") {
-        args.append({"tmux", "attach-session", "-t", target});
-    } else if (program == "custom") {
-        const auto customConfig = config.group("Custom");
-        program = customConfig.readEntry("program");
-        QHash<QString, QString> variables = {{"name", target}};
-        QString arg = customConfig.readEntry("attach_params");
-        arg = KMacroExpander::expandMacrosShellQuote(arg, variables);
-        const auto splitPair = splitArguments(arg);
-        if (splitPair.first) {
-            args.append(splitPair.second);
-        } else {
-            showErrorNotification("The command line arguments from the custom config are invalid!");
-            return;
+    if (program == QLatin1String("yakuake-session")) {
+        QStringList args;
+        if (!title.isEmpty()) {
+            args.append({"-t", title});
         }
-    } else {
-        args.append({"-e", "tmux", "a", "-t", target});
+        return args << "-e" << command;
+    } else if (program == QLatin1String("terminator")) {
+        return QStringList{"-x"} + command;
+    } else if (program == QLatin1String("st") || program == QLatin1String("kitty")) {
+        // These take the command to run as positional arguments
+        return command;
     }
-    QProcess::startDetached(program, args);
+    return QStringList{"-e"} + command;
 }
 
-void TmuxRunnerAPI::executeCreateCommand(QString &program, const QString &target, const QMap<QString, QVariant> &data)
+void TmuxRunnerAPI::executeAttachCommand(const QString &program, const QString &target)
 {
-    QStringList args;
-    const QString path = filterPath(data.value("path").toString());
-    if (program == "yakuake") {
-        if (data.value("action") != "tmuxinator")
-            args.append({"-t", target, "-e", "tmux", "new-session", "-s", target});
-        else
-            args.append({"-t", target, "-e", "tmuxinator", target});
-    } else if (program == "terminator") {
-        if (data.value("action") != "tmuxinator")
-            args.append({"-x", "tmux", "new-session", "-s", target});
-        else
-            args.append({"-x", "tmuxinator", target});
-    } else if (program == "st") {
-        if (data.value("action") != "tmuxinator")
-            args.append({"tmux", "new-session", "-s", target});
-        else
-            args.append({"tmuxinator", target});
-    } else if (program == "custom") {
+    if (program == QLatin1String("custom")) {
         const auto customConfig = config.group("Custom");
-        program = customConfig.readEntry("program");
-        QString arg = customConfig.readEntry("new_params");
-        QHash<QString, QString> variables = {{"name", target}, {"path", path}};
-        arg = KMacroExpander::expandMacrosShellQuote(arg, variables);
+        QHash<QString, QString> variables = {{"name", target}};
+        const QString arg = KMacroExpander::expandMacrosShellQuote(customConfig.readEntry("attach_params"), variables);
         const auto splitPair = splitArguments(arg);
-        if (splitPair.first) {
-            args.append(splitPair.second);
-        } else {
+        if (!splitPair.first) {
             showErrorNotification("The command line arguments from the custom config are invalid!");
             return;
         }
-    } else {
-        args.append({"-e", "tmux", "new-session", "-s", target});
+        QProcess::startDetached(customConfig.readEntry("program"), splitPair.second);
+        return;
     }
-    // Add path option
-    if (program != "custom") {
-        args.append({"-c", path});
-    }
+    // The "=" prefix makes tmux only accept an exact session name match
+    QProcess::startDetached(program, wrapInTerminal(program, target, {"tmux", "attach-session", "-t", "=" + target}));
+}
 
-    // Remove everything after tmux and replace (workaround for custom)
-    if (data.value("action") == "tmuxinator") {
-        const int idx = args.indexOf("tmux");
-        while (args.size() > idx) {
-            args.removeLast();
-        }
-        args.append({"tmuxinator", target});
+void TmuxRunnerAPI::executeCreateCommand(const QString &program, const QString &target, const QMap<QString, QVariant> &data)
+{
+    const QString path = filterPath(data.value("path").toString());
+    const bool tmuxinator = data.value("action") == QLatin1String("tmuxinator");
+
+    QStringList tmuxinatorCommand;
+    if (tmuxinator) {
+        tmuxinatorCommand = {"tmuxinator", target};
         const auto splitPair = splitArguments(data.value("args").toString());
         if (splitPair.first) {
-            args.append(splitPair.second);
+            tmuxinatorCommand.append(splitPair.second);
         } else {
             showErrorNotification("The command extra arguments for tmuxinator are invalid, continuing without!");
         }
+    }
+
+    if (program != QLatin1String("custom")) {
+        QStringList command = tmuxinatorCommand;
+        if (!tmuxinator) {
+            command = {"tmux", "new-session"};
+            if (!target.isEmpty()) {
+                command.append({"-s", target});
+            }
+            command.append({"-c", path});
+        }
+        QProcess::startDetached(program, wrapInTerminal(program, target, command));
+        return;
+    }
+
+    const auto customConfig = config.group("Custom");
+    QHash<QString, QString> variables = {{"name", target}, {"path", path}};
+    const QString arg = KMacroExpander::expandMacrosShellQuote(customConfig.readEntry("new_params"), variables);
+    const auto splitPair = splitArguments(arg);
+    if (!splitPair.first) {
+        showErrorNotification("The command line arguments from the custom config are invalid!");
+        return;
+    }
+    QStringList args = splitPair.second;
+
+    // Replace everything from tmux onwards with the tmuxinator command
+    if (tmuxinator) {
+        const int idx = args.indexOf("tmux");
+        if (idx == -1) {
+            showErrorNotification("The custom create session parameters must contain \"tmux\" to launch tmuxinator!");
+            return;
+        }
+        args = args.mid(0, idx) + tmuxinatorCommand;
     }
 
     // If new session is started but no name provided
@@ -135,37 +135,22 @@ void TmuxRunnerAPI::executeCreateCommand(QString &program, const QString &target
     }
     args.removeAll(QString());
 
-    QProcess::startDetached(program, args);
+    QProcess::startDetached(customConfig.readEntry("program"), args);
 }
 
 QStringList TmuxRunnerAPI::fetchTmuxinatorConfigs()
 {
     QStringList tmuxinatorConfigs;
-    QProcess isTmuxinatorInstalledProcess;
-    isTmuxinatorInstalledProcess.start("whereis", QStringList{"-b", "tmuxinator"});
-    isTmuxinatorInstalledProcess.waitForFinished();
-    if (QString(isTmuxinatorInstalledProcess.readAll()) == "tmuxinator:\n") {
-        // Disable tmuxinator until the user installs and enables it
-        config.writeEntry("enable_tmuxinator", false);
+    if (QStandardPaths::findExecutable(QStringLiteral("tmuxinator")).isEmpty()) {
         return tmuxinatorConfigs;
     }
-    // Fetch the available configurations
+    // Output is a "tmuxinator projects:" header followed by the names, possibly spread over several lines/columns
     QProcess process;
-    process.start("tmuxinator", QStringList{"ls"});
+    process.start(QStringLiteral("tmuxinator"), QStringList{"ls"});
     process.waitForFinished(2000);
-    const QString res = process.readAll();
-    if (res.split('\n').size() == 2) {
-        return tmuxinatorConfigs;
-    }
-    const auto _entries = res.split('\n');
-    if (_entries.size() < 2) {
-        return tmuxinatorConfigs;
-    }
-    const auto entries = _entries.at(1).split(' ');
-    for (const auto &entry : entries) {
-        if (!entry.isEmpty()) {
-            tmuxinatorConfigs.append(entry);
-        }
+    const QStringList lines = QString::fromUtf8(process.readAll()).split('\n');
+    for (int i = 1; i < lines.size(); ++i) {
+        tmuxinatorConfigs.append(lines.at(i).split(' ', Qt::SkipEmptyParts));
     }
     return tmuxinatorConfigs;
 }
@@ -174,16 +159,16 @@ QString TmuxRunnerAPI::parseQueryFlags(QString &term, QString &openIn)
 {
     // Flag at end of query or just a flag with no session name
     QString program;
-    if (term.size() >= 2 && term.contains(queryHasFlag)) {
-        const QString flag = queryHasFlag.match(term).captured(1);
-        QString flagValue = flags.value(flag);
+    const QRegularExpressionMatch flagMatch = queryHasFlag.match(term);
+    if (flagMatch.hasMatch()) {
+        const QString flagValue = flags.value(flagMatch.captured(1));
         if (!flagValue.isEmpty()) {
             program = flagValue;
-            openIn = " in " + flagValue.remove("-session");
+            openIn = " in " + QString(flagValue).remove("-session");
         } else {
             openIn = " default (invalid flag)";
         }
-        term.remove(queryHasFlag);
+        term.remove(flagMatch.capturedStart(), flagMatch.capturedLength());
     }
 
     return program;
@@ -198,5 +183,5 @@ QPair<bool, QStringList> TmuxRunnerAPI::splitArguments(const QString &argument)
 
 void TmuxRunnerAPI::showErrorNotification(const QString &msg)
 {
-    KNotification::event(KNotification::Error, QStringLiteral("Tmux Runner"), msg, QStringLiteral("utility-terminal"));
+    KNotification::event(KNotification::Error, QStringLiteral("Tmux Runner"), msg, QStringLiteral("utilities-terminal"));
 }
