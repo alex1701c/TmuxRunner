@@ -37,11 +37,12 @@ void TmuxRunner::reloadConfiguration()
         if (actionChoice == QLatin1String("yakuake")) {
             actionProgram = "yakuake-session";
             actionIcon = QIcon::fromTheme("yakuake", actionIcon);
-        } else if (actionChoice == QLatin1String("Simple Terminal (st)")) {
+        } else if (actionChoice == QLatin1String("simple terminal (st)")) {
             actionProgram = "st";
         } else {
-            // Konsole or custom can be youst uses because they are lowercase
+            // Konsole, Kitty, Terminator and Custom are the program names in lowercase
             actionProgram = actionChoice;
+            actionIcon = QIcon::fromTheme(actionProgram, actionIcon);
         }
 
 #if QT_VERSION_MAJOR == 5
@@ -68,7 +69,6 @@ void TmuxRunner::match(KRunner::RunnerContext &context)
     if (!term.startsWith(triggerWord))
         return;
     term.remove(triggerWordRegex);
-    QList<KRunner::QueryMatch> matches;
     bool exactMatch = false;
     bool tmuxinator = false;
 
@@ -97,13 +97,11 @@ void TmuxRunner::match(KRunner::RunnerContext &context)
     if (!exactMatch) {
         context.addMatches(addTmuxNewSessionMatches(term, openIn, program, tmuxinator));
     }
-
-    context.addMatches(matches);
 }
 
 void TmuxRunner::run(const KRunner::RunnerContext &, const KRunner::QueryMatch &match)
 {
-    QMap<QString, QVariant> data = match.data().toMap();
+    const QMap<QString, QVariant> data = match.data().toMap();
     QString program = data.value("program", defaultProgram).toString();
     if (match.selectedAction()) {
         program = actionProgram;
@@ -111,7 +109,7 @@ void TmuxRunner::run(const KRunner::RunnerContext &, const KRunner::QueryMatch &
     const QString target = data.value("target").toString();
 
     if (data.value("action") == "attach") {
-        api.executeAttatchCommand(program, target);
+        api.executeAttachCommand(program, target);
     } else {
         api.executeCreateCommand(program, target, data);
     }
@@ -141,12 +139,12 @@ QList<KRunner::QueryMatch> TmuxRunner::addTmuxinatorMatches(QString &term, const
         if (tmuxinatorConfig.startsWith(filter)) {
             if (!tmuxSessions.contains(tmuxinatorConfig)) {
                 matches.append(
-                    createMatch("Create Tmuxinator  " + tmuxinatorConfig + openIn,
+                    createMatch("Create Tmuxinator " + tmuxinatorConfig + openIn,
                                 {{"action", "tmuxinator"}, {"program", program}, {"args", tmuxinatorMatch.captured(2)}, {"target", tmuxinatorConfig}},
                                 1));
             } else {
                 attached.append(tmuxinatorConfig);
-                matches.append(createMatch("Attach Tmuxinator  " + tmuxinatorConfig + openIn,
+                matches.append(createMatch("Attach Tmuxinator " + tmuxinatorConfig + openIn,
                                            {
                                                {"action", "attach"},
                                                {"program", program},

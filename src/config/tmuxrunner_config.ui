@@ -115,6 +115,11 @@
               </item>
               <item>
                <property name="text">
+                <string>Kitty</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
                 <string>Custom</string>
                </property>
               </item>
@@ -159,6 +164,13 @@
                 </widget>
                </item>
                <item>
+                <widget class="QRadioButton" name="optionKitty">
+                 <property name="text">
+                  <string>Kitty</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QRadioButton" name="optionCustom">
                  <property name="enabled">
                   <bool>false</bool>
@@ -182,7 +194,7 @@
                <item>
                 <widget class="QLabel" name="attachSessionLabel">
                  <property name="text">
-                  <string>Attatch Session</string>
+                  <string>Attach Session</string>
                  </property>
                 </widget>
                </item>

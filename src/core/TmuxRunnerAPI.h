@@ -18,9 +18,9 @@ public:
 
     QStringList fetchTmuxinatorConfigs();
 
-    void executeAttatchCommand(QString &program, const QString &target);
+    void executeAttachCommand(const QString &program, const QString &target);
 
-    void executeCreateCommand(QString &program, const QString &target, const QMap<QString, QVariant> &data);
+    void executeCreateCommand(const QString &program, const QString &target, const QMap<QString, QVariant> &data);
 
     QString parseQueryFlags(QString &term, QString &openIn);
 
@@ -29,18 +29,19 @@ public:
     void showErrorNotification(const QString &msg);
 
 private:
-    const QLatin1Char lineSeparator = QLatin1Char(':');
+    // Builds the terminal arguments needed to run the given command
+    QStringList wrapInTerminal(const QString &program, const QString &title, const QStringList &command);
+
     KConfigGroup config;
-    const QString fetchProgram = QStringLiteral("tmux");
-    const QStringList fetchArgs = {QStringLiteral("ls")};
     const QMap<QString, QString> flags = {
         {"k", "konsole"},
         {"y", "yakuake-session"},
         {"t", "terminator"},
         {"s", "st"},
+        {"i", "kitty"},
         {"c", "custom"},
     };
-    QRegularExpression queryHasFlag = QRegularExpression(QStringLiteral(" ?-([a-z])$"));
+    QRegularExpression queryHasFlag = QRegularExpression(QStringLiteral("(?:^| +)-([a-z])$"));
 };
 
 #endif // TMUXRUNNER_TMUXRUNNERAPI_H

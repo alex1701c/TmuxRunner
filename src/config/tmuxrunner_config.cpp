@@ -47,11 +47,13 @@ TmuxRunnerConfig::TmuxRunnerConfig(QObject *parent, const QVariantList &)
         m_ui->optionTerminator->setChecked(true);
     else if (program == "st")
         m_ui->optionSimpleTerminal->setChecked(true);
+    else if (program == "kitty")
+        m_ui->optionKitty->setChecked(true);
     else if (program == "custom")
         m_ui->optionCustom->setChecked(true);
 
-    m_ui->optionCustom->setEnabled(!m_ui->createSessionParameters->text().isEmpty() && !m_ui->attachSessionProgram->text().isEmpty()
-                                   && !m_ui->attachSessionParameters->text().isEmpty());
+    // Enables/disables the custom option, must run before the action is restored
+    customOptionInsertion();
     m_ui->actionComboBox->setCurrentText(config.readEntry("action_program", "None"));
 
     const auto changedSlotPointer = &TmuxRunnerConfig::markAsChanged;
@@ -60,11 +62,12 @@ TmuxRunnerConfig::TmuxRunnerConfig(QObject *parent, const QVariantList &)
     connect(m_ui->tmuxinatorEnable, &QCheckBox::clicked, this, changedSlotPointer);
     // Terminals
     connect(m_ui->actionComboBox, &QComboBox::currentIndexChanged, this, changedSlotPointer);
-    connect(m_ui->optionKonsole, &QCheckBox::clicked, this, changedSlotPointer);
-    connect(m_ui->optionYakuake, &QCheckBox::clicked, this, changedSlotPointer);
-    connect(m_ui->optionTerminator, &QCheckBox::clicked, this, changedSlotPointer);
-    connect(m_ui->optionSimpleTerminal, &QCheckBox::clicked, this, changedSlotPointer);
-    connect(m_ui->optionCustom, &QCheckBox::clicked, this, changedSlotPointer);
+    connect(m_ui->optionKonsole, &QRadioButton::clicked, this, changedSlotPointer);
+    connect(m_ui->optionYakuake, &QRadioButton::clicked, this, changedSlotPointer);
+    connect(m_ui->optionTerminator, &QRadioButton::clicked, this, changedSlotPointer);
+    connect(m_ui->optionSimpleTerminal, &QRadioButton::clicked, this, changedSlotPointer);
+    connect(m_ui->optionKitty, &QRadioButton::clicked, this, changedSlotPointer);
+    connect(m_ui->optionCustom, &QRadioButton::clicked, this, changedSlotPointer);
     // Enable/Disable custom option
     connect(m_ui->attachSessionProgram, &QLineEdit::textChanged, this, &TmuxRunnerConfig::customOptionInsertion);
     connect(m_ui->attachSessionParameters, &QLineEdit::textChanged, this, &TmuxRunnerConfig::customOptionInsertion);
@@ -81,8 +84,6 @@ TmuxRunnerConfig::TmuxRunnerConfig(QObject *parent, const QVariantList &)
     connect(m_ui->shortcutKey, &QLineEdit::textChanged, this, &TmuxRunnerConfig::shortcutInsertion);
     connect(m_ui->shortcutPath, &QLineEdit::textChanged, this, &TmuxRunnerConfig::shortcutInsertion);
     connect(m_ui->shortcutList, &QListWidget::currentTextChanged, this, &TmuxRunnerConfig::shortcutInsertion);
-
-    validateCustomArguments();
 }
 
 void TmuxRunnerConfig::defaults()
@@ -104,6 +105,8 @@ void TmuxRunnerConfig::save()
         program = "terminator";
     else if (m_ui->optionSimpleTerminal->isChecked())
         program = "st";
+    else if (m_ui->optionKitty->isChecked())
+        program = "kitty";
     else if (m_ui->optionCustom->isChecked() && m_ui->optionCustom->isEnabled())
         program = "custom";
     else
@@ -114,15 +117,15 @@ void TmuxRunnerConfig::save()
     config.writeEntry("action_program", m_ui->actionComboBox->currentText());
 
     customTerminalConfig.writeEntry("program", m_ui->attachSessionProgram->text());
-    // Attatch parameters
-    const auto attatchValid = splitArguments(m_ui->attachSessionParameters->text());
+    // Attach parameters
+    const auto attachValid = splitArguments(m_ui->attachSessionParameters->text());
     customTerminalConfig.writeEntry("attach_params", m_ui->attachSessionParameters->text());
-    if (!attatchValid) {
+    if (!attachValid) {
         program = "konsole";
     }
 
     // New parameters
-    const auto newValid = splitArguments(m_ui->attachSessionParameters->text());
+    const auto newValid = splitArguments(m_ui->createSessionParameters->text());
     customTerminalConfig.writeEntry("new_params", m_ui->createSessionParameters->text());
     if (!newValid) {
         program = "konsole";
@@ -148,10 +151,11 @@ void TmuxRunnerConfig::customOptionInsertion()
     const bool textsNotEmpty =
         !m_ui->createSessionParameters->text().isEmpty() && !m_ui->attachSessionProgram->text().isEmpty() && !m_ui->attachSessionParameters->text().isEmpty();
     m_ui->optionCustom->setEnabled(textsNotEmpty);
-    if (textsNotEmpty && m_ui->actionComboBox->count() < 6) {
-        m_ui->actionComboBox->addItem("Custom");
-    } else if (m_ui->actionComboBox->count() == 6) {
-        m_ui->actionComboBox->removeItem(5);
+    const int customIndex = m_ui->actionComboBox->findText(QStringLiteral("Custom"));
+    if (textsNotEmpty && customIndex == -1) {
+        m_ui->actionComboBox->addItem(QStringLiteral("Custom"));
+    } else if (!textsNotEmpty && customIndex != -1) {
+        m_ui->actionComboBox->removeItem(customIndex);
     }
     validateCustomArguments();
 }
